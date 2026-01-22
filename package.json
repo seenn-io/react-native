@@ -1,0 +1,63 @@
+{
+  "name": "@seenn/react-native",
+  "version": "0.1.0",
+  "description": "Seenn React Native SDK - Open source job state transport with Live Activity support",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seenn-io/sdk.git",
+    "directory": "packages/sdk-react-native"
+  },
+  "keywords": [
+    "seenn",
+    "react-native",
+    "push-notifications",
+    "live-activity",
+    "sse",
+    "real-time",
+    "job-tracking",
+    "ios",
+    "android",
+    "open-source"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-native": ">=0.60.0"
+  },
+  "dependencies": {
+    "@react-native-community/netinfo": "^11.3.1",
+    "eventemitter3": "^5.0.1",
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.45",
+    "@types/react-native": "^0.72.8",
+    "react": "^18.2.0",
+    "react-native": "^0.72.8",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0"
+  },
+  "files": [
+    "dist",
+    "src",
+    "android",
+    "ios",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
