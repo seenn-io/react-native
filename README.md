@@ -341,6 +341,97 @@ const unsubscribe = LiveActivity.onPushToken((event) => {
 
 ---
 
+## Expo Support
+
+For Expo projects, Live Activity works via `expo-live-activity` (Software Mansion).
+
+> **Note:** Requires Expo Dev Client. Not compatible with Expo Go.
+
+### Installation (Expo)
+
+```bash
+# Install both packages
+npx expo install expo-live-activity
+npm install @seenn/react-native
+```
+
+### Configuration (app.json)
+
+```json
+{
+  "expo": {
+    "plugins": ["expo-live-activity"]
+  }
+}
+```
+
+### Prebuild
+
+```bash
+npx expo prebuild --clean
+```
+
+### Usage: useExpoLiveActivity Hook
+
+```typescript
+import { useSeennJob, useExpoLiveActivity } from '@seenn/react-native';
+
+function JobScreen({ jobId }) {
+  const job = useSeennJob(seenn, jobId);
+
+  // Auto-sync with Expo Live Activity
+  const { isActive, isSupported } = useExpoLiveActivity(job, {
+    autoStart: true,
+    autoEnd: true,
+    colors: {
+      backgroundColor: '#1c1c1e',
+      progressTint: '#3b82f6',
+    },
+    deepLinkUrl: 'myapp://jobs/job_123',
+  });
+
+  return (
+    <View>
+      <Text>{job?.title}</Text>
+      <Text>Progress: {job?.progress}%</Text>
+    </View>
+  );
+}
+```
+
+### Usage: Manual Control (Expo)
+
+```typescript
+import { ExpoLiveActivity } from '@seenn/react-native';
+
+// Check if available
+const isAvailable = ExpoLiveActivity.isAvailable();
+
+// Start activity
+const activityId = await ExpoLiveActivity.start(job, {
+  backgroundColor: '#1c1c1e',
+  progressViewTint: '#3b82f6',
+});
+
+// Update activity
+await ExpoLiveActivity.update(activityId, job);
+
+// Stop activity
+await ExpoLiveActivity.stop(activityId, job);
+```
+
+### Expo vs Native Module
+
+| Feature | Native Module | Expo (expo-live-activity) |
+|---------|--------------|---------------------------|
+| Setup | Manual Xcode | `npx expo prebuild` |
+| Custom UI | Full SwiftUI | Config-based |
+| Expo Go | No | No |
+| Dev Client | No | Yes |
+| Multi-job | Yes (5 max) | Yes (5 max) |
+
+---
+
 ## Manual Subscription (Without Hooks)
 
 If you're not using React hooks, you can subscribe manually:
