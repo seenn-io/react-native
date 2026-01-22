@@ -350,9 +350,11 @@ For Expo projects, Live Activity works via `expo-live-activity` (Software Mansio
 ### Installation (Expo)
 
 ```bash
-# Install both packages
+# If you already have @seenn/react-native installed:
 npx expo install expo-live-activity
-npm install @seenn/react-native
+
+# Fresh installation (both packages):
+npx expo install expo-live-activity @seenn/react-native
 ```
 
 ### Configuration (app.json)
