@@ -1,7 +1,7 @@
 // Seenn React Native SDK Types
 // MIT License - Open Source
 
-export type JobStatus = 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
+export type JobStatus = 'pending' | 'running' | 'completed' | 'failed';
 
 export type ChildProgressMode = 'average' | 'weighted' | 'sequential';
 
@@ -21,22 +21,55 @@ export interface SeennJob {
   appId: string;
   status: JobStatus;
   title: string;
-  progress?: number;
+  jobType: string;
+  progress: number;
+  message?: string;
   stage?: StageInfo;
-  eta?: number;
+  estimatedCompletionAt?: string;
   queue?: QueueInfo;
   result?: JobResult;
   error?: JobError;
+  metadata?: Record<string, unknown>;
   // Parent-Child
-  parentJobId?: string;
+  parent?: ParentInfo;
+  children?: ChildrenStats;
   childProgressMode?: ChildProgressMode;
-  children?: ChildJob[];
-  childrenCompleted?: number;
-  childrenTotal?: number;
   createdAt: string;
   updatedAt: string;
+  completedAt?: string;
 }
 
+/** Parent info for child jobs */
+export interface ParentInfo {
+  parentJobId: string;
+  childIndex: number;
+}
+
+/** Children stats for parent jobs */
+export interface ChildrenStats {
+  total: number;
+  completed: number;
+  failed: number;
+  running: number;
+  pending: number;
+}
+
+/** Summary of a child job */
+export interface ChildJobSummary {
+  id: string;
+  childIndex: number;
+  title: string;
+  status: JobStatus;
+  progress: number;
+  message?: string;
+  result?: JobResult;
+  error?: JobError;
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string;
+}
+
+/** Deprecated - use ChildJobSummary instead */
 export interface ChildJob {
   childId: string;
   parentJobId: string;
@@ -48,26 +81,28 @@ export interface ChildJob {
 }
 
 export interface StageInfo {
-  id: string;
-  label: string;
-  index: number;
+  name: string;
+  current: number;
   total: number;
+  description?: string;
 }
 
 export interface QueueInfo {
   position: number;
-  total: number;
-  estimatedWaitSeconds?: number;
+  total?: number;
+  queueName?: string;
 }
 
 export interface JobResult {
-  [key: string]: any;
+  type?: string;
+  url?: string;
+  data?: Record<string, unknown>;
 }
 
 export interface JobError {
   code: string;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 export interface InAppMessage {
@@ -84,7 +119,7 @@ export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'rec
 
 export interface SSEEvent {
   event: string;
-  data: any;
+  data: unknown;
   id?: string;
 }
 
@@ -95,8 +130,7 @@ export type SSEEventType =
   | 'job.progress'
   | 'job.completed'
   | 'job.failed'
-  | 'job.cancelled'
-  | 'child.progress'
+  | 'parent.updated'
   | 'in_app_message'
   | 'heartbeat'
   | 'error';
@@ -105,4 +139,10 @@ export interface LiveActivityConfig {
   jobId: string;
   title: string;
   startProgress?: number;
+}
+
+/** Parent job with all its children */
+export interface ParentWithChildren {
+  parent: SeennJob;
+  children: ChildJobSummary[];
 }
