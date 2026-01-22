@@ -1,7 +1,7 @@
 {
   "name": "@seenn/react-native",
-  "version": "0.1.1",
-  "description": "Seenn React Native SDK - Open source job state transport with Live Activity support",
+  "version": "0.2.0",
+  "description": "Seenn React Native SDK - Job state transport with iOS Live Activity support",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -58,9 +58,18 @@
     "src",
     "android",
     "ios",
+    "templates",
+    "scripts",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "SeennReactNative.podspec"
   ],
+  "react-native": "src/index.ts",
+  "codegenConfig": {
+    "name": "SeennReactNativeSpec",
+    "type": "modules",
+    "jsSrcsDir": "src"
+  },
   "publishConfig": {
     "access": "public"
   }

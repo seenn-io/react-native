@@ -4,6 +4,16 @@
 
 export { Seenn } from './Seenn';
 
+// Live Activity (iOS 16.1+)
+export { LiveActivity } from './native/LiveActivity';
+export type {
+  LiveActivityStartParams,
+  LiveActivityUpdateParams,
+  LiveActivityEndParams,
+  LiveActivityResult,
+  LiveActivityPushTokenEvent,
+} from './native/LiveActivity';
+
 // Hooks
 export {
   useSeennJob,
@@ -12,6 +22,12 @@ export {
   useSeennJobProgress,
   useSeennJobsByStatus,
 } from './hooks';
+
+export { useLiveActivity } from './hooks/useLiveActivity';
+export type {
+  UseLiveActivityOptions,
+  UseLiveActivityResult,
+} from './hooks/useLiveActivity';
 
 // Types
 export type {
@@ -23,10 +39,14 @@ export type {
   JobResult,
   JobError,
   ChildJob,
+  ChildJobSummary,
+  ParentInfo,
+  ChildrenStats,
+  ParentWithChildren,
   ChildProgressMode,
   InAppMessage,
   ConnectionState,
-  LiveActivityConfig,
+  SSEEventType,
 } from './types';
 
 // Errors

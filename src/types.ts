@@ -1,7 +1,7 @@
 // Seenn React Native SDK Types
 // MIT License - Open Source
 
-export type JobStatus = 'pending' | 'running' | 'completed' | 'failed';
+export type JobStatus = 'pending' | 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 export type ChildProgressMode = 'average' | 'weighted' | 'sequential';
 

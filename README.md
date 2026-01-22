@@ -10,7 +10,8 @@ Real-time job tracking with Live Activity support for React Native apps. Perfect
 ## Features
 
 - ✅ **Real-time updates** via Server-Sent Events (SSE)
-- ✅ **Live Activity support** (iOS 16.1+)
+- ✅ **iOS Live Activity** - Lock Screen & Dynamic Island (iOS 16.1+) **NEW in v0.2.0**
+- ✅ **Multi-job support** - Track up to 5 concurrent Live Activities
 - ✅ **React hooks** for easy integration
 - ✅ **TypeScript** support
 - ✅ **Auto-reconnection** with exponential backoff
@@ -205,6 +206,137 @@ function RunningJobs() {
 
   return <Text>{runningJobs.length} jobs running</Text>;
 }
+```
+
+---
+
+## iOS Live Activity
+
+Show job progress on the Lock Screen and Dynamic Island (iOS 16.1+).
+
+### Setup
+
+**1. Add Widget Extension to your Xcode project:**
+
+1. Open your iOS project in Xcode
+2. File → New → Target → Widget Extension
+3. Name it `SeennWidgetExtension`
+4. Copy files from `node_modules/@seenn/react-native/templates/SeennWidgetExtension/`
+
+**2. Add NSSupportsLiveActivities to Info.plist:**
+
+```xml
+<key>NSSupportsLiveActivities</key>
+<true/>
+```
+
+**3. Run pod install:**
+
+```bash
+cd ios && pod install
+```
+
+### Usage: Auto-Sync Mode (Recommended)
+
+```typescript
+import { useSeennJob, useLiveActivity } from '@seenn/react-native';
+
+function JobScreen({ jobId }) {
+  const job = useSeennJob(seenn, jobId);
+
+  // Auto-sync job state with Live Activity
+  const { isActive, isSupported } = useLiveActivity(job, {
+    autoStart: true,  // Start when job begins running
+    autoEnd: true,    // End when job completes/fails
+    dismissAfter: 300, // Keep on screen 5 min after completion
+  });
+
+  return (
+    <View>
+      <Text>{job?.title}</Text>
+      <Text>Progress: {job?.progress}%</Text>
+      {isSupported && <Text>Live Activity: {isActive ? 'On' : 'Off'}</Text>}
+    </View>
+  );
+}
+```
+
+### Usage: Manual Control
+
+```typescript
+import { LiveActivity } from '@seenn/react-native';
+
+// Check support
+const supported = await LiveActivity.isSupported();
+
+// Start activity
+const result = await LiveActivity.start({
+  jobId: 'job_123',
+  title: 'Generating video...',
+  jobType: 'video-generation',
+  initialProgress: 0,
+});
+
+// Update progress
+await LiveActivity.update({
+  jobId: 'job_123',
+  progress: 50,
+  status: 'running',
+  message: 'Encoding frames...',
+  stageName: 'Encoding',
+  stageIndex: 2,
+  stageTotal: 3,
+});
+
+// End activity
+await LiveActivity.end({
+  jobId: 'job_123',
+  finalStatus: 'completed',
+  message: 'Video ready!',
+  resultUrl: 'https://example.com/video.mp4',
+  dismissAfter: 300,
+});
+
+// Get active activities
+const activeIds = await LiveActivity.getActiveIds();
+// ['job_123', 'job_456']
+
+// Cancel all
+await LiveActivity.cancelAll();
+```
+
+### Multi-Job Support
+
+iOS allows up to 5 concurrent Live Activities per app:
+
+```typescript
+// Start multiple activities
+await LiveActivity.start({ jobId: 'job_1', title: 'Video 1', ... });
+await LiveActivity.start({ jobId: 'job_2', title: 'Video 2', ... });
+await LiveActivity.start({ jobId: 'job_3', title: 'Image Pack', ... });
+
+// Each updates independently
+await LiveActivity.update({ jobId: 'job_1', progress: 50, ... });
+await LiveActivity.update({ jobId: 'job_2', progress: 75, ... });
+
+// Check which are active
+const activeIds = await LiveActivity.getActiveIds();
+console.log(activeIds); // ['job_1', 'job_2', 'job_3']
+```
+
+### Push Token for Background Updates
+
+```typescript
+import { LiveActivity } from '@seenn/react-native';
+
+// Listen for push tokens
+const unsubscribe = LiveActivity.onPushToken((event) => {
+  console.log(`Token for ${event.jobId}: ${event.token}`);
+  // Send to your backend for APNs push updates
+  sendTokenToBackend(event.jobId, event.token);
+});
+
+// Later: unsubscribe()
 ```
 
 ---
@@ -447,7 +579,7 @@ Yes! The SDK is open source (MIT). You can:
 
 ### Does this support iOS Live Activity?
 
-Not yet in React Native SDK. Use the Flutter SDK for native Live Activity support.
+**Yes!** As of v0.2.0, iOS Live Activity is fully supported. See the [Live Activity Setup](#ios-live-activity) section.
 
 ---
 
