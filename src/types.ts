@@ -22,10 +22,16 @@ export interface SeennJob {
   status: JobStatus;
   title: string;
   jobType: string;
+  /** Job version for ETA tracking */
+  version?: string;
   progress: number;
   message?: string;
   stage?: StageInfo;
   estimatedCompletionAt?: string;
+  /** ETA confidence score (0.0 - 1.0) */
+  etaConfidence?: number;
+  /** Number of historical jobs used to calculate ETA */
+  etaBasedOn?: number;
   queue?: QueueInfo;
   result?: JobResult;
   error?: JobError;
@@ -36,6 +42,8 @@ export interface SeennJob {
   childProgressMode?: ChildProgressMode;
   createdAt: string;
   updatedAt: string;
+  /** When the job started running */
+  startedAt?: string;
   completedAt?: string;
 }
 

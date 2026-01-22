@@ -31,7 +31,9 @@ export {
   useSeennConnectionState,
   useSeennJobProgress,
   useSeennJobsByStatus,
+  useEtaCountdown,
 } from './hooks';
+export type { EtaCountdownResult } from './hooks';
 
 // Live Activity Hooks
 export { useLiveActivity } from './hooks/useLiveActivity';
