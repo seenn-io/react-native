@@ -1,6 +1,6 @@
 {
   "name": "@seenn/react-native",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Seenn React Native SDK - Open source job state transport with Live Activity support",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -8,9 +8,13 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/seenn-io/sdk.git",
-    "directory": "packages/sdk-react-native"
+    "url": "https://github.com/seenn-io/react-native.git"
   },
+  "homepage": "https://github.com/seenn-io/react-native#readme",
+  "bugs": {
+    "url": "https://github.com/seenn-io/react-native/issues"
+  },
+  "author": "Seenn <hello@seenn.io>",
   "keywords": [
     "seenn",
     "react-native",
