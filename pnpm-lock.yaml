@@ -11,6 +11,9 @@ importers:
       '@react-native-community/netinfo':
         specifier: ^11.3.1
         version: 11.4.1(react-native@0.72.17(@babel/core@7.28.6)(@babel/preset-env@7.28.6(@babel/core@7.28.6))(react@18.3.1))
+      '@seenn/types':
+        specifier: 0.1.0
+        version: 0.1.0
       eventemitter3:
         specifier: ^5.0.1
         version: 5.0.4
@@ -1452,6 +1455,9 @@ packages:
     resolution: {integrity: sha512-H8AE9Ur/t0+1VXujj90w0HrSOuv0Nq9r1vSZF2t5km20NTfosQsGGUXDaKdQZzwuLts7IyL1fYT4hM95TI9c4g==}
     cpu: [x64]
     os: [win32]
+
+  '@seenn/types@0.1.0':
+    resolution: {integrity: sha512-6+mgX3DcpNA8TbzbgrUhyuclaFLUtU0oWGeuXbsKro9/jb2QyeSZ38AkdSQY6uz5+4S2hSy9yJslLOwJsTjrug==}
 
   '@sideway/address@4.1.5':
     resolution: {integrity: sha512-IqO/DUQHUkPeixNQ8n0JA6102hT9CmaljNTPmQ1u8MEhBo/R4Q8eKLN/vGZxuebwOroDB4cbpjheD4+/sKFK4Q==}
@@ -5801,6 +5807,8 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.56.0':
     optional: true
+
+  '@seenn/types@0.1.0': {}
 
   '@sideway/address@4.1.5':
     dependencies:
