@@ -14,6 +14,7 @@ export class Seenn {
   private config: SeennConfig;
   private sseService: SSEService | null = null;
   private stateManager: StateManager;
+  private currentUserId: string | null = null;
 
   constructor(config: SeennConfig) {
     this.config = {
@@ -37,6 +38,7 @@ export class Seenn {
       return;
     }
 
+    this.currentUserId = userId;
     this.log(`Connecting for user: ${userId}`);
 
     this.sseService = new SSEService({
@@ -73,6 +75,63 @@ export class Seenn {
     }
 
     this.stateManager.setConnectionState('disconnected');
+  }
+
+  /**
+   * Force reconnect to SSE
+   *
+   * Useful for recovering from connection issues or when app returns to foreground.
+   *
+   * @example
+   * ```ts
+   * // Reconnect when app comes to foreground
+   * useEffect(() => {
+   *   const subscription = AppState.addEventListener('change', (state) => {
+   *     if (state === 'active') {
+   *       seenn.reconnect();
+   *     }
+   *   });
+   *   return () => subscription.remove();
+   * }, []);
+   * ```
+   */
+  async reconnect(): Promise<void> {
+    if (!this.currentUserId) {
+      this.log('Cannot reconnect: no previous connection');
+      return;
+    }
+
+    this.log('Force reconnecting');
+
+    // Disconnect if connected
+    if (this.sseService) {
+      this.sseService.disconnect();
+      this.sseService.removeAllListeners();
+      this.sseService = null;
+    }
+
+    // Reconnect
+    await this.connect(this.currentUserId);
+  }
+
+  /**
+   * Manually update job state
+   *
+   * Useful for polling fallback or optimistic updates.
+   *
+   * @example
+   * ```ts
+   * // Polling fallback when SSE is disconnected
+   * const fetchJob = async (jobId: string) => {
+   *   const response = await fetch(`/api/jobs/${jobId}`);
+   *   const job = await response.json();
+   *   seenn.updateJob(job);
+   * };
+   * ```
+   */
+  updateJob(job: SeennJob): void {
+    this.log('Manual job update', job.jobId);
+    this.stateManager.updateJob(job);
   }
 
   /**
