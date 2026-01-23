@@ -268,3 +268,204 @@ export function useEtaCountdown(job: SeennJob | null): EtaCountdownResult {
     basedOn: job?.etaBasedOn ?? null,
   };
 }
+
+// ============================================
+// Parent-Child Hooks
+// ============================================
+
+/**
+ * Result from useParentJob hook
+ */
+export interface ParentJobResult {
+  /** The parent job (null if not found or not a parent) */
+  job: SeennJob | null;
+  /** Whether this job is a parent job */
+  isParent: boolean;
+  /** Children stats (completed, failed, running, pending, total) */
+  childStats: {
+    total: number;
+    completed: number;
+    failed: number;
+    running: number;
+    pending: number;
+  } | null;
+  /** Overall progress (0-100) */
+  progress: number;
+  /** Whether all children have completed (successfully or failed) */
+  allChildrenDone: boolean;
+  /** Whether all children completed successfully */
+  allChildrenSuccess: boolean;
+  /** Whether any child has failed */
+  hasFailedChildren: boolean;
+}
+
+/**
+ * Hook to subscribe to a parent job with children helpers
+ *
+ * @example
+ * ```tsx
+ * function BatchProgress({ seenn, batchJobId }) {
+ *   const { job, childStats, allChildrenSuccess, progress } = useParentJob(seenn, batchJobId);
+ *
+ *   if (!job) return <Text>Loading...</Text>;
+ *
+ *   return (
+ *     <View>
+ *       <Text>{job.title}</Text>
+ *       <ProgressBar progress={progress} />
+ *       {childStats && (
+ *         <Text>
+ *           {childStats.completed}/{childStats.total} completed
+ *         </Text>
+ *       )}
+ *       {allChildrenSuccess && <Text>All done!</Text>}
+ *     </View>
+ *   );
+ * }
+ * ```
+ */
+export function useParentJob(seenn: Seenn, parentJobId: string): ParentJobResult {
+  const job = useSeennJob(seenn, parentJobId);
+
+  const result = useMemo((): ParentJobResult => {
+    if (!job) {
+      return {
+        job: null,
+        isParent: false,
+        childStats: null,
+        progress: 0,
+        allChildrenDone: false,
+        allChildrenSuccess: false,
+        hasFailedChildren: false,
+      };
+    }
+
+    const isParent = job.children !== undefined;
+    const childStats = job.children ?? null;
+
+    let allChildrenDone = false;
+    let allChildrenSuccess = false;
+    let hasFailedChildren = false;
+
+    if (childStats) {
+      const doneCount = childStats.completed + childStats.failed;
+      allChildrenDone = doneCount === childStats.total;
+      allChildrenSuccess = childStats.completed === childStats.total;
+      hasFailedChildren = childStats.failed > 0;
+    }
+
+    return {
+      job,
+      isParent,
+      childStats,
+      progress: job.progress,
+      allChildrenDone,
+      allChildrenSuccess,
+      hasFailedChildren,
+    };
+  }, [job]);
+
+  return result;
+}
+
+/**
+ * Result from useChildJob hook
+ */
+export interface ChildJobResult {
+  /** The child job (null if not found or not a child) */
+  job: SeennJob | null;
+  /** Whether this job is a child job */
+  isChild: boolean;
+  /** Parent job ID (if this is a child) */
+  parentJobId: string | null;
+  /** Child index within parent (0-based) */
+  childIndex: number | null;
+  /** Whether this child job has completed */
+  isComplete: boolean;
+  /** Whether this child job has failed */
+  isFailed: boolean;
+}
+
+/**
+ * Hook to subscribe to a child job with parent helpers
+ *
+ * @example
+ * ```tsx
+ * function ChildJobCard({ seenn, childJobId }) {
+ *   const { job, parentJobId, childIndex, isComplete } = useChildJob(seenn, childJobId);
+ *
+ *   if (!job) return null;
+ *
+ *   return (
+ *     <View>
+ *       <Text>#{childIndex + 1}: {job.title}</Text>
+ *       <ProgressBar progress={job.progress} />
+ *       {isComplete && <Icon name="check" />}
+ *     </View>
+ *   );
+ * }
+ * ```
+ */
+export function useChildJob(seenn: Seenn, childJobId: string): ChildJobResult {
+  const job = useSeennJob(seenn, childJobId);
+
+  const result = useMemo((): ChildJobResult => {
+    if (!job) {
+      return {
+        job: null,
+        isChild: false,
+        parentJobId: null,
+        childIndex: null,
+        isComplete: false,
+        isFailed: false,
+      };
+    }
+
+    const isChild = job.parent !== undefined;
+
+    return {
+      job,
+      isChild,
+      parentJobId: job.parent?.parentJobId ?? null,
+      childIndex: job.parent?.childIndex ?? null,
+      isComplete: job.status === 'completed',
+      isFailed: job.status === 'failed',
+    };
+  }, [job]);
+
+  return result;
+}
+
+/**
+ * Hook to subscribe to multiple specific jobs by ID
+ *
+ * Useful for watching all children of a parent job.
+ *
+ * @example
+ * ```tsx
+ * function ChildrenList({ seenn, childJobIds }) {
+ *   const childJobs = useJobsByIds(seenn, childJobIds);
+ *
+ *   return (
+ *     <View>
+ *       {childJobs.map((job) => (
+ *         <ChildJobCard key={job.jobId} job={job} />
+ *       ))}
+ *     </View>
+ *   );
+ * }
+ * ```
+ */
+export function useJobsByIds(seenn: Seenn, jobIds: string[]): SeennJob[] {
+  const allJobs = useSeennJobs(seenn);
+
+  const filteredJobs = useMemo(() => {
+    if (!jobIds || jobIds.length === 0) return [];
+
+    return jobIds
+      .map((id) => allJobs.get(id))
+      .filter((job): job is SeennJob => job !== undefined);
+  }, [allJobs, jobIds]);
+
+  return filteredJobs;
+}

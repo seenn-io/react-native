@@ -32,8 +32,16 @@ export {
   useSeennJobProgress,
   useSeennJobsByStatus,
   useEtaCountdown,
+  // Parent-Child Hooks
+  useParentJob,
+  useChildJob,
+  useJobsByIds,
 } from './hooks';
-export type { EtaCountdownResult } from './hooks';
+export type {
+  EtaCountdownResult,
+  ParentJobResult,
+  ChildJobResult,
+} from './hooks';
 
 // Live Activity Hooks
 export { useLiveActivity } from './hooks/useLiveActivity';

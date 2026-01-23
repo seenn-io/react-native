@@ -1,6 +1,6 @@
 {
   "name": "@seenn/react-native",
-  "version": "0.2.1",
+  "version": "0.2.4",
   "description": "Seenn React Native SDK - Job state transport with iOS Live Activity support (Expo compatible)",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

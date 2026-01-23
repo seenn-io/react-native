@@ -22,8 +22,8 @@ export interface SeennJob {
   status: JobStatus;
   title: string;
   jobType: string;
-  /** Job version for ETA tracking */
-  version?: string;
+  /** Workflow ID for ETA tracking (default: jobType) */
+  workflowId?: string;
   progress: number;
   message?: string;
   stage?: StageInfo;
