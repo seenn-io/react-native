@@ -134,12 +134,16 @@ export interface SSEEvent {
 // Event types from SSE
 export type SSEEventType =
   | 'connected'
+  | 'job.sync'           // State reconciliation on connect/reconnect (v0.2.6+)
   | 'job.started'
   | 'job.progress'
   | 'job.completed'
   | 'job.failed'
+  | 'job.cancelled'
+  | 'child.progress'
   | 'parent.updated'
   | 'in_app_message'
+  | 'connection.idle'    // Server closing due to inactivity (v0.2.6+)
   | 'heartbeat'
   | 'error';
 

@@ -207,6 +207,18 @@ export class Seenn {
       this.log('Connected', data);
     });
 
+    // job.sync event (state reconciliation on connect/reconnect)
+    this.sseService.on('job.sync', (job: SeennJob) => {
+      this.log('Job sync', job.jobId);
+      this.stateManager.updateJob(job);
+    });
+
+    // connection.idle event (server closing due to inactivity)
+    this.sseService.on('connection.idle', (data: { reason: string; idleTime: number }) => {
+      this.log('Connection idle', data.reason);
+      // Connection will close after this, auto-reconnect will handle it
+    });
+
     // job.started event
     this.sseService.on('job.started', (job: SeennJob) => {
       this.log('Job started', job.jobId);
