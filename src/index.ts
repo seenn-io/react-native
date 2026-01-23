@@ -14,6 +14,24 @@ export type {
   LiveActivityPushTokenEvent,
 } from './native/LiveActivity';
 
+// Ongoing Notification (Android 8.0+) - Native Module
+export { OngoingNotification } from './native/OngoingNotification';
+export type {
+  OngoingNotificationStartParams,
+  OngoingNotificationUpdateParams,
+  OngoingNotificationEndParams,
+  OngoingNotificationResult,
+} from './native/OngoingNotification';
+
+// Unified Cross-Platform Job Notification API
+export { JobNotification } from './native/JobNotification';
+export type {
+  JobNotificationStartParams,
+  JobNotificationUpdateParams,
+  JobNotificationEndParams,
+  JobNotificationResult,
+} from './native/JobNotification';
+
 // Live Activity - Expo Integration (uses expo-live-activity)
 export { ExpoLiveActivity } from './expo/ExpoLiveActivity';
 export {
@@ -55,6 +73,13 @@ export type {
   UseExpoLiveActivityOptions,
   UseExpoLiveActivityResult,
 } from './hooks/useExpoLiveActivity';
+
+// Cross-Platform Job Notification Hook
+export { useJobNotification } from './hooks/useJobNotification';
+export type {
+  UseJobNotificationOptions,
+  UseJobNotificationResult,
+} from './hooks/useJobNotification';
 
 // Types
 export type {
