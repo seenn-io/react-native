@@ -2,22 +2,27 @@
 // MIT License - Open Source
 
 import { SSEService } from './services/SSEService';
+import { PollingService } from './services/PollingService';
 import { StateManager } from './state/StateManager';
 import type {
   SeennConfig,
   SeennJob,
   ConnectionState,
+  ConnectionMode,
   InAppMessage,
 } from './types';
 
 export class Seenn {
   private config: SeennConfig;
   private sseService: SSEService | null = null;
+  private pollingService: PollingService | null = null;
   private stateManager: StateManager;
   private currentUserId: string | null = null;
 
   constructor(config: SeennConfig) {
     this.config = {
+      mode: 'sse',
+      pollInterval: 5000,
       reconnect: true,
       reconnectInterval: 1000,
       maxReconnectAttempts: 10,
@@ -30,40 +35,76 @@ export class Seenn {
   }
 
   /**
-   * Connect to SSE for real-time updates
+   * Check if using polling mode
+   */
+  get isPollingMode(): boolean {
+    return this.config.mode === 'polling';
+  }
+
+  /**
+   * Check if using SSE mode
+   */
+  get isSSEMode(): boolean {
+    return this.config.mode !== 'polling';
+  }
+
+  /**
+   * Connect for real-time updates (SSE or Polling based on config)
    */
   async connect(userId: string): Promise<void> {
-    if (this.sseService) {
+    if (this.sseService || this.pollingService) {
       this.log('Already connected');
       return;
     }
 
     this.currentUserId = userId;
-    this.log(`Connecting for user: ${userId}`);
+    this.log(`Connecting for user: ${userId} (mode: ${this.config.mode})`);
 
-    this.sseService = new SSEService({
-      url: this.config.sseUrl!,
-      authToken: this.config.authToken,
-      reconnect: this.config.reconnect,
-      reconnectInterval: this.config.reconnectInterval,
-      maxReconnectAttempts: this.config.maxReconnectAttempts,
-      debug: this.config.debug,
-    });
+    if (this.isPollingMode) {
+      // Polling mode for self-hosted backends
+      this.pollingService = new PollingService({
+        baseUrl: this.config.baseUrl,
+        authToken: this.config.authToken,
+        pollInterval: this.config.pollInterval,
+        debug: this.config.debug,
+      });
 
-    // Listen to connection state changes
-    this.sseService.on('connectionStateChange', (state: ConnectionState) => {
-      this.stateManager.setConnectionState(state);
-    });
+      // Listen to connection state changes
+      this.pollingService.on('connectionStateChange', (state: ConnectionState) => {
+        this.stateManager.setConnectionState(state);
+      });
 
-    // Listen to SSE events
-    this.setupEventListeners();
+      // Setup event listeners for polling
+      this.setupPollingEventListeners();
 
-    // Start connection
-    this.sseService.connect(userId);
+      // Start polling
+      this.pollingService.connect(userId);
+    } else {
+      // SSE mode (default)
+      this.sseService = new SSEService({
+        url: this.config.sseUrl!,
+        authToken: this.config.authToken,
+        reconnect: this.config.reconnect,
+        reconnectInterval: this.config.reconnectInterval,
+        maxReconnectAttempts: this.config.maxReconnectAttempts,
+        debug: this.config.debug,
+      });
+
+      // Listen to connection state changes
+      this.sseService.on('connectionStateChange', (state: ConnectionState) => {
+        this.stateManager.setConnectionState(state);
+      });
+
+      // Listen to SSE events
+      this.setupEventListeners();
+
+      // Start connection
+      this.sseService.connect(userId);
+    }
   }
 
   /**
-   * Disconnect from SSE
+   * Disconnect from SSE or Polling
    */
   disconnect(): void {
     this.log('Disconnecting');
@@ -72,6 +113,12 @@ export class Seenn {
       this.sseService.disconnect();
       this.sseService.removeAllListeners();
       this.sseService = null;
+    }
+
+    if (this.pollingService) {
+      this.pollingService.disconnect();
+      this.pollingService.removeAllListeners();
+      this.pollingService = null;
     }
 
     this.stateManager.setConnectionState('disconnected');
@@ -132,6 +179,54 @@ export class Seenn {
   updateJob(job: SeennJob): void {
     this.log('Manual job update', job.jobId);
     this.stateManager.updateJob(job);
+  }
+
+  /**
+   * Subscribe to job updates (polling mode only)
+   * In SSE mode, all jobs for the user are automatically received.
+   *
+   * @example
+   * ```ts
+   * // Subscribe to a specific job for polling
+   * seenn.subscribeJobForPolling('job_123');
+   * ```
+   */
+  subscribeJobForPolling(jobId: string): void {
+    if (this.pollingService) {
+      this.pollingService.subscribeJob(jobId);
+    } else {
+      this.log('subscribeJobForPolling: Not in polling mode, ignoring');
+    }
+  }
+
+  /**
+   * Subscribe to multiple jobs (polling mode only)
+   */
+  subscribeJobsForPolling(jobIds: string[]): void {
+    if (this.pollingService) {
+      this.pollingService.subscribeJobs(jobIds);
+    } else {
+      this.log('subscribeJobsForPolling: Not in polling mode, ignoring');
+    }
+  }
+
+  /**
+   * Unsubscribe from job updates (polling mode only)
+   */
+  unsubscribeJobFromPolling(jobId: string): void {
+    if (this.pollingService) {
+      this.pollingService.unsubscribeJob(jobId);
+    }
+  }
+
+  /**
+   * Get subscribed job IDs (polling mode only)
+   */
+  getPollingSubscribedJobIds(): string[] {
+    if (this.pollingService) {
+      return this.pollingService.getSubscribedJobIds();
+    }
+    return [];
   }
 
   /**
@@ -275,6 +370,40 @@ export class Seenn {
     // error event
     this.sseService.on('error', (error) => {
       this.log('Error', error.message);
+    });
+  }
+
+  private setupPollingEventListeners(): void {
+    if (!this.pollingService) return;
+
+    // job.started event
+    this.pollingService.on('job.started', (job: SeennJob) => {
+      this.log('Job started (polling)', job.jobId);
+      this.stateManager.updateJob(job);
+    });
+
+    // job.progress event
+    this.pollingService.on('job.progress', (job: SeennJob) => {
+      this.log('Job progress (polling)', `${job.jobId}: ${job.progress}%`);
+      this.stateManager.updateJob(job);
+    });
+
+    // job.completed event
+    this.pollingService.on('job.completed', (job: SeennJob) => {
+      this.log('Job completed (polling)', job.jobId);
+      this.stateManager.updateJob(job);
+    });
+
+    // job.failed event
+    this.pollingService.on('job.failed', (job: SeennJob) => {
+      this.log('Job failed (polling)', job.jobId);
+      this.stateManager.updateJob(job);
+    });
+
+    // job.cancelled event
+    this.pollingService.on('job.cancelled', (job: SeennJob) => {
+      this.log('Job cancelled (polling)', job.jobId);
+      this.stateManager.updateJob(job);
     });
   }
 

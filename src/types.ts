@@ -41,6 +41,7 @@ export type {
   LiveActivityPushTokenEvent,
 
   // SDK Configuration
+  ConnectionMode,
   SeennConfig,
 } from '@seenn/types';
 

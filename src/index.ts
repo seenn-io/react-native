@@ -98,6 +98,7 @@ export type {
   ChildProgressMode,
   InAppMessage,
   ConnectionState,
+  ConnectionMode,
   SSEEventType,
 } from './types';
 
