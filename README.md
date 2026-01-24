@@ -9,14 +9,17 @@ Real-time job tracking with Live Activity support for React Native apps. Perfect
 
 ## Features
 
-- ✅ **Real-time updates** via Server-Sent Events (SSE)
-- ✅ **iOS Live Activity** - Lock Screen & Dynamic Island (iOS 16.1+) **NEW in v0.2.0**
+- ✅ **Real-time updates** via Server-Sent Events (SSE) or Polling
+- ✅ **iOS Live Activity** - Lock Screen & Dynamic Island (iOS 16.1+)
+- ✅ **Android Ongoing Notification** - Persistent foreground notification
 - ✅ **Multi-job support** - Track up to 5 concurrent Live Activities
 - ✅ **React hooks** for easy integration
 - ✅ **TypeScript** support
 - ✅ **Auto-reconnection** with exponential backoff
 - ✅ **Offline queue** (missed events replay)
 - ✅ **Parent-child jobs** tracking
+- ✅ **ETA countdown** with confidence scoring
+- ✅ **Polling mode** for self-hosted backends **NEW in v0.4.0**
 - ✅ **Open source** (MIT License)
 
 ---
@@ -92,6 +95,29 @@ function VideoGenerationScreen({ jobId }) {
     </View>
   );
 }
+```
+
+---
+
+## Polling Mode (Self-Hosted)
+
+For simpler self-hosted setups without SSE infrastructure:
+
+```typescript
+const seenn = new Seenn({
+  baseUrl: 'https://api.yourcompany.com',
+  authToken: 'your_token',
+  mode: 'polling',        // Use polling instead of SSE
+  pollInterval: 5000,     // Poll every 5 seconds
+});
+
+await seenn.connect(userId);
+
+// Subscribe to specific jobs for polling
+seenn.subscribeJobForPolling('job_123');
+seenn.subscribeJobsForPolling(['job_456', 'job_789']);
+
+// Jobs auto-unsubscribe when completed/failed/cancelled
 ```
 
 ---
