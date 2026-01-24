@@ -6,7 +6,7 @@ import type { ConnectionState, SeennJob } from '../types';
 
 export interface PollingServiceConfig {
   baseUrl: string;
-  authToken?: string;
+  apiKey?: string;
   pollInterval?: number;
   debug?: boolean;
 }
@@ -141,8 +141,8 @@ export class PollingService extends EventEmitter {
         'Accept': 'application/json',
       };
 
-      if (this.config.authToken) {
-        headers['Authorization'] = `Bearer ${this.config.authToken}`;
+      if (this.config.apiKey) {
+        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
       }
 
       const response = await fetch(url, { headers });

@@ -7,7 +7,7 @@ import type { ConnectionState, SSEEvent, SSEEventType } from '../types';
 
 export interface SSEServiceConfig {
   url: string;
-  authToken?: string;
+  apiKey?: string;
   reconnect?: boolean;
   reconnectInterval?: number;
   maxReconnectAttempts?: number;
@@ -57,8 +57,8 @@ export class SSEService extends EventEmitter {
       this.xhr.setRequestHeader('Accept', 'text/event-stream');
       this.xhr.setRequestHeader('Cache-Control', 'no-cache');
 
-      if (this.config.authToken) {
-        this.xhr.setRequestHeader('Authorization', `Bearer ${this.config.authToken}`);
+      if (this.config.apiKey) {
+        this.xhr.setRequestHeader('Authorization', `Bearer ${this.config.apiKey}`);
       }
 
       // Handle progress (incoming data)

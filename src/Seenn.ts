@@ -20,6 +20,11 @@ export class Seenn {
   private currentUserId: string | null = null;
 
   constructor(config: SeennConfig) {
+    // Validate API key format
+    if (config.apiKey && !config.apiKey.startsWith('pk_') && !config.apiKey.startsWith('sk_')) {
+      throw new Error('Invalid API key format. Key must start with pk_ or sk_');
+    }
+
     this.config = {
       mode: 'sse',
       pollInterval: 5000,
@@ -64,7 +69,7 @@ export class Seenn {
       // Polling mode for self-hosted backends
       this.pollingService = new PollingService({
         baseUrl: this.config.baseUrl,
-        authToken: this.config.authToken,
+        apiKey: this.config.apiKey,
         pollInterval: this.config.pollInterval,
         debug: this.config.debug,
       });
@@ -83,7 +88,7 @@ export class Seenn {
       // SSE mode (default)
       this.sseService = new SSEService({
         url: this.config.sseUrl!,
-        authToken: this.config.authToken,
+        apiKey: this.config.apiKey,
         reconnect: this.config.reconnect,
         reconnectInterval: this.config.reconnectInterval,
         maxReconnectAttempts: this.config.maxReconnectAttempts,
