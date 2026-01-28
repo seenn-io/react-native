@@ -6,6 +6,7 @@ import type { ConnectionState, SeennJob } from '../types';
 
 export interface PollingServiceConfig {
   baseUrl: string;
+  basePath?: string;
   apiKey?: string;
   pollInterval?: number;
   debug?: boolean;
@@ -136,7 +137,8 @@ export class PollingService extends EventEmitter {
 
   private async fetchJob(jobId: string): Promise<void> {
     try {
-      const url = `${this.config.baseUrl}/v1/jobs/${jobId}`;
+      const basePath = this.config.basePath ?? '/v1';
+      const url = `${this.config.baseUrl}${basePath}/jobs/${jobId}`;
       const headers: Record<string, string> = {
         'Accept': 'application/json',
       };

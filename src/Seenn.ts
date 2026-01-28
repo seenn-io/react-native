@@ -20,10 +20,14 @@ export class Seenn {
   private currentUserId: string | null = null;
 
   constructor(config: SeennConfig) {
-    // Validate API key format
-    if (config.apiKey && !config.apiKey.startsWith('pk_') && !config.apiKey.startsWith('sk_')) {
+    // Validate API key format (skip for self-hosted backends)
+    const isSelfHosted = config.mode === 'polling' || config.baseUrl !== 'https://api.seenn.io';
+
+    if (!isSelfHosted && config.apiKey && !config.apiKey.startsWith('pk_') && !config.apiKey.startsWith('sk_')) {
       throw new Error('Invalid API key format. Key must start with pk_ or sk_');
     }
+
+    const basePath = config.basePath ?? '/v1';
 
     this.config = {
       mode: 'sse',
@@ -33,7 +37,8 @@ export class Seenn {
       maxReconnectAttempts: 10,
       debug: false,
       ...config,
-      sseUrl: config.sseUrl || `${config.baseUrl}/v1/sse`,
+      basePath,
+      sseUrl: config.sseUrl || `${config.baseUrl}${basePath}/sse`,
     };
 
     this.stateManager = new StateManager();
@@ -69,6 +74,7 @@ export class Seenn {
       // Polling mode for self-hosted backends
       this.pollingService = new PollingService({
         baseUrl: this.config.baseUrl,
+        basePath: this.config.basePath,
         apiKey: this.config.apiKey,
         pollInterval: this.config.pollInterval,
         debug: this.config.debug,
