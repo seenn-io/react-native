@@ -35,6 +35,16 @@ RCT_EXTERN_METHOD(cancelActivity:(NSString *)jobId
 RCT_EXTERN_METHOD(cancelAllActivities:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
+// Push Authorization (iOS 12+)
+RCT_EXTERN_METHOD(getPushAuthorizationStatus:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(requestProvisionalPushAuthorization:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(requestStandardPushAuthorization:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+
 + (BOOL)requiresMainQueueSetup
 {
   return YES;

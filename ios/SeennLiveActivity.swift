@@ -1,5 +1,6 @@
 import Foundation
 import React
+import UserNotifications
 
 /// React Native bridge for Seenn Live Activity
 @objc(SeennLiveActivity)
@@ -328,6 +329,98 @@ class SeennLiveActivity: RCTEventEmitter {
             resolve(bridge.cancelAllActivities())
         } else {
             resolve(false)
+        }
+    }
+
+    // MARK: - Push Authorization (iOS 12+)
+
+    @objc(getPushAuthorizationStatus:reject:)
+    func getPushAuthorizationStatus(
+        resolve: @escaping RCTPromiseResolveBlock,
+        reject: @escaping RCTPromiseRejectBlock
+    ) {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            let status: String
+            let isProvisional: Bool
+            let canRequestFullAuthorization: Bool
+
+            switch settings.authorizationStatus {
+            case .notDetermined:
+                status = "notDetermined"
+                isProvisional = false
+                canRequestFullAuthorization = false
+            case .denied:
+                status = "denied"
+                isProvisional = false
+                canRequestFullAuthorization = false
+            case .authorized:
+                status = "authorized"
+                isProvisional = false
+                canRequestFullAuthorization = false
+            case .provisional:
+                status = "provisional"
+                isProvisional = true
+                canRequestFullAuthorization = true
+            case .ephemeral:
+                status = "ephemeral"
+                isProvisional = false
+                canRequestFullAuthorization = false
+            @unknown default:
+                status = "notDetermined"
+                isProvisional = false
+                canRequestFullAuthorization = false
+            }
+
+            resolve([
+                "status": status,
+                "isProvisional": isProvisional,
+                "canRequestFullAuthorization": canRequestFullAuthorization
+            ])
+        }
+    }
+
+    @objc(requestProvisionalPushAuthorization:reject:)
+    func requestProvisionalPushAuthorization(
+        resolve: @escaping RCTPromiseResolveBlock,
+        reject: @escaping RCTPromiseRejectBlock
+    ) {
+        if #available(iOS 12.0, *) {
+            UNUserNotificationCenter.current().requestAuthorization(
+                options: [.alert, .sound, .badge, .provisional]
+            ) { granted, error in
+                if let error = error {
+                    reject("PUSH_AUTH_ERROR", error.localizedDescription, error)
+                } else {
+                    resolve(granted)
+                }
+            }
+        } else {
+            // iOS < 12: Provisional not supported, fall back to standard
+            UNUserNotificationCenter.current().requestAuthorization(
+                options: [.alert, .sound, .badge]
+            ) { granted, error in
+                if let error = error {
+                    reject("PUSH_AUTH_ERROR", error.localizedDescription, error)
+                } else {
+                    resolve(granted)
+                }
+            }
+        }
+    }
+
+    @objc(requestStandardPushAuthorization:reject:)
+    func requestStandardPushAuthorization(
+        resolve: @escaping RCTPromiseResolveBlock,
+        reject: @escaping RCTPromiseRejectBlock
+    ) {
+        UNUserNotificationCenter.current().requestAuthorization(
+            options: [.alert, .sound, .badge]
+        ) { granted, error in
+            if let error = error {
+                reject("PUSH_AUTH_ERROR", error.localizedDescription, error)
+            } else {
+                resolve(granted)
+            }
         }
     }
 }

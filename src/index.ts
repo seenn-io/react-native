@@ -12,6 +12,9 @@ export type {
   LiveActivityEndParams,
   LiveActivityResult,
   LiveActivityPushTokenEvent,
+  // Push Authorization Types (iOS 12+)
+  PushAuthorizationStatus,
+  PushAuthorizationInfo,
 } from './native/LiveActivity';
 
 // Ongoing Notification (Android 8.0+) - Native Module

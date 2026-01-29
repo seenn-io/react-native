@@ -1,6 +1,6 @@
 {
   "name": "@seenn/react-native",
-  "version": "0.6.0",
+  "version": "0.8.0",
   "description": "Seenn React Native SDK - Job state transport with iOS Live Activity support (Expo compatible)",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -21,7 +21,7 @@
     "expo",
     "push-notifications",
     "live-activity",
-    "sse",
+    "polling",
     "real-time",
     "job-tracking",
     "ios",
@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@react-native-community/netinfo": "^11.3.1",
-    "@seenn/types": "^0.3.0",
+    "@seenn/types": "^0.4.0",
     "eventemitter3": "^5.0.1",
     "ulid": "^2.3.0"
   },

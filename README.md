@@ -19,7 +19,8 @@ Real-time job tracking with Live Activity support for React Native apps. Perfect
 - ✅ **Offline queue** (missed events replay)
 - ✅ **Parent-child jobs** tracking
 - ✅ **ETA countdown** with confidence scoring
-- ✅ **Polling mode** for self-hosted backends **NEW in v0.4.0**
+- ✅ **Polling mode** for self-hosted backends
+- ✅ **Provisional Push** (iOS 12+) - no permission prompt
 - ✅ **Open source** (MIT License)
 
 ---
@@ -364,6 +365,35 @@ const unsubscribe = LiveActivity.onPushToken((event) => {
 
 // Later: unsubscribe()
 ```
+
+---
+
+## Provisional Push (iOS 12+)
+
+Request push notifications without showing a permission prompt:
+
+```typescript
+import { LiveActivity } from '@seenn/react-native';
+
+// Check current status
+const status = await LiveActivity.getPushAuthorizationStatus();
+console.log(status.status);        // 'provisional', 'authorized', etc.
+console.log(status.isProvisional); // true if quiet notifications
+
+// Request provisional push (no prompt!)
+const granted = await LiveActivity.requestProvisionalPushAuthorization();
+if (granted) {
+  console.log('Provisional push enabled');
+}
+
+// Later: upgrade to full push when ready
+if (status.canRequestFullAuthorization) {
+  await LiveActivity.upgradeToStandardPush(); // Shows prompt
+}
+```
+
+> **Note:** Provisional notifications appear silently in Notification Center only.
+> Users can "Keep" or "Turn Off" from their first notification.
 
 ---
 

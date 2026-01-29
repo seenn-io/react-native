@@ -95,6 +95,26 @@ export interface LiveActivityPushTokenEvent {
   token: string;
 }
 
+// MARK: - Push Authorization Types
+
+/** iOS push authorization status */
+export type PushAuthorizationStatus =
+  | 'notDetermined'
+  | 'denied'
+  | 'authorized'
+  | 'provisional'
+  | 'ephemeral';
+
+/** Push authorization information */
+export interface PushAuthorizationInfo {
+  /** Current authorization status */
+  status: PushAuthorizationStatus;
+  /** Whether current authorization is provisional */
+  isProvisional: boolean;
+  /** Whether user can be prompted to upgrade to full authorization */
+  canRequestFullAuthorization: boolean;
+}
+
 // MARK: - Event Emitter
 
 let eventEmitter: NativeEventEmitter | null = null;
@@ -367,6 +387,133 @@ export const LiveActivity = {
 
     const subscription = emitter.addListener('SeennLiveActivityPushToken', callback);
     return () => subscription.remove();
+  },
+
+  // MARK: - Push Authorization (iOS 12+)
+
+  /**
+   * Get current push notification authorization status
+   *
+   * @returns Push authorization info with status and capabilities
+   *
+   * @example
+   * ```typescript
+   * const info = await LiveActivity.getPushAuthorizationStatus();
+   * console.log(info.status); // 'provisional', 'authorized', etc.
+   * console.log(info.isProvisional); // true if quiet notifications
+   * console.log(info.canRequestFullAuthorization); // true if upgradeable
+   * ```
+   */
+  async getPushAuthorizationStatus(): Promise<PushAuthorizationInfo> {
+    if (Platform.OS !== 'ios') {
+      return {
+        status: 'notDetermined',
+        isProvisional: false,
+        canRequestFullAuthorization: false,
+      };
+    }
+    if (!NativeModule) {
+      return {
+        status: 'notDetermined',
+        isProvisional: false,
+        canRequestFullAuthorization: false,
+      };
+    }
+    try {
+      return await NativeModule.getPushAuthorizationStatus();
+    } catch {
+      return {
+        status: 'notDetermined',
+        isProvisional: false,
+        canRequestFullAuthorization: false,
+      };
+    }
+  },
+
+  /**
+   * Request provisional push authorization (iOS 12+)
+   *
+   * Provisional push allows sending "quiet" notifications without
+   * showing a permission prompt. Notifications appear only in
+   * Notification Center without sounds or banners.
+   *
+   * When users see their first notification, they can choose
+   * "Keep" or "Turn Off" to finalize their preference.
+   *
+   * @returns true if provisional authorization was granted
+   *
+   * @example
+   * ```typescript
+   * // Request provisional push - no prompt shown!
+   * const granted = await LiveActivity.requestProvisionalPushAuthorization();
+   * if (granted) {
+   *   console.log('Provisional push enabled');
+   * }
+   * ```
+   */
+  async requestProvisionalPushAuthorization(): Promise<boolean> {
+    if (Platform.OS !== 'ios') return false;
+    if (!NativeModule) return false;
+    try {
+      return await NativeModule.requestProvisionalPushAuthorization();
+    } catch {
+      return false;
+    }
+  },
+
+  /**
+   * Request standard push authorization (shows permission prompt)
+   *
+   * This shows the standard iOS permission prompt asking users
+   * to allow notifications with alerts, sounds, and badges.
+   *
+   * @returns true if full authorization was granted
+   *
+   * @example
+   * ```typescript
+   * const granted = await LiveActivity.requestStandardPushAuthorization();
+   * if (granted) {
+   *   console.log('Full push access granted');
+   * }
+   * ```
+   */
+  async requestStandardPushAuthorization(): Promise<boolean> {
+    if (Platform.OS !== 'ios') return false;
+    if (!NativeModule) return false;
+    try {
+      return await NativeModule.requestStandardPushAuthorization();
+    } catch {
+      return false;
+    }
+  },
+
+  /**
+   * Upgrade from provisional to standard push authorization
+   *
+   * If the user currently has provisional authorization, this
+   * shows the standard permission prompt to upgrade to full access.
+   *
+   * @returns true if upgrade was successful
+   *
+   * @example
+   * ```typescript
+   * const info = await LiveActivity.getPushAuthorizationStatus();
+   * if (info.canRequestFullAuthorization) {
+   *   const upgraded = await LiveActivity.upgradeToStandardPush();
+   *   if (upgraded) {
+   *     console.log('Upgraded to full push access');
+   *   }
+   * }
+   * ```
+   */
+  async upgradeToStandardPush(): Promise<boolean> {
+    if (Platform.OS !== 'ios') return false;
+    if (!NativeModule) return false;
+    try {
+      return await NativeModule.requestStandardPushAuthorization();
+    } catch {
+      return false;
+    }
   },
 };
 
