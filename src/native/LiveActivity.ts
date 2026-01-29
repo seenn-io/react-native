@@ -39,6 +39,25 @@ export interface LiveActivityUpdateParams {
   estimatedEndTime?: number;
 }
 
+/** CTA button style presets */
+export type LiveActivityCTAButtonStyle = 'primary' | 'secondary' | 'outline';
+
+/** CTA button configuration for Live Activity completion */
+export interface LiveActivityCTAButton {
+  /** Button text */
+  text: string;
+  /** Deep link URL to open when tapped */
+  deepLink: string;
+  /** Button style preset */
+  style?: LiveActivityCTAButtonStyle;
+  /** Custom background color (hex) */
+  backgroundColor?: string;
+  /** Custom text color (hex) */
+  textColor?: string;
+  /** Corner radius (default: 20) */
+  cornerRadius?: number;
+}
+
 export interface LiveActivityEndParams {
   /** Job ID to end */
   jobId: string;
@@ -54,6 +73,8 @@ export interface LiveActivityEndParams {
   errorMessage?: string;
   /** Seconds to keep on screen after ending (default: 300 = 5 min) */
   dismissAfter?: number;
+  /** CTA button to show on completion/failure */
+  ctaButton?: LiveActivityCTAButton;
 }
 
 export interface LiveActivityResult {

@@ -2,8 +2,22 @@
 // MIT License - Open Source
 
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { LiveActivity } from '../native/LiveActivity';
+import { LiveActivity, LiveActivityCTAButton } from '../native/LiveActivity';
 import type { SeennJob } from '../types';
+
+/** CTA button configuration for a specific status */
+export interface StatusCTAConfig {
+  /** Button text */
+  text: string;
+  /** Deep link URL or function to generate it from job */
+  deepLink: string | ((job: SeennJob) => string);
+  /** Button style preset */
+  style?: 'primary' | 'secondary' | 'outline';
+  /** Custom background color (hex) */
+  backgroundColor?: string;
+  /** Custom text color (hex) */
+  textColor?: string;
+}
 
 export interface UseLiveActivityOptions {
   /**
@@ -29,6 +43,30 @@ export interface UseLiveActivityOptions {
    * Use this to send the token to your backend for push updates
    */
   onPushToken?: (token: string) => void;
+
+  /**
+   * CTA button to show when job completes
+   * @example
+   * completionCTA: {
+   *   text: 'See Your Photos ✨',
+   *   deepLink: (job) => `myapp://jobs/${job.jobId}/results`,
+   * }
+   */
+  completionCTA?: StatusCTAConfig;
+
+  /**
+   * CTA buttons for specific job statuses
+   * Overrides completionCTA for completed status if both are provided
+   * @example
+   * ctaButtons: {
+   *   completed: { text: 'View Results', deepLink: 'myapp://results' },
+   *   failed: { text: 'Try Again', deepLink: (job) => `myapp://retry/${job.jobId}` },
+   * }
+   */
+  ctaButtons?: {
+    completed?: StatusCTAConfig;
+    failed?: StatusCTAConfig;
+  };
 }
 
 export interface UseLiveActivityResult {
@@ -111,6 +149,21 @@ export interface UseLiveActivityResult {
  * }
  * ```
  */
+/** Helper to resolve CTA config into LiveActivityCTAButton */
+function resolveCTAButton(
+  config: StatusCTAConfig | undefined,
+  job: SeennJob
+): LiveActivityCTAButton | undefined {
+  if (!config) return undefined;
+  return {
+    text: config.text,
+    deepLink: typeof config.deepLink === 'function' ? config.deepLink(job) : config.deepLink,
+    style: config.style,
+    backgroundColor: config.backgroundColor,
+    textColor: config.textColor,
+  };
+}
+
 export function useLiveActivity(
   job: SeennJob | null,
   options: UseLiveActivityOptions = {}
@@ -120,6 +173,8 @@ export function useLiveActivity(
     autoEnd = true,
     dismissAfter = 300,
     onPushToken,
+    completionCTA,
+    ctaButtons,
   } = options;
 
   const [isActive, setIsActive] = useState(false);
@@ -198,6 +253,23 @@ export function useLiveActivity(
       // Auto-end when job completes/fails
       if (autoEnd && stillActive) {
         if (currentStatus === 'completed' || currentStatus === 'failed') {
+          // Determine CTA button based on status
+          // Priority: 1) Backend override, 2) Status-specific config, 3) completionCTA
+          let ctaButton: LiveActivityCTAButton | undefined;
+
+          // Check for backend CTA override (for self-hosted/custom backends)
+          const jobWithCTA = job as typeof job & { ctaButtonText?: string; ctaDeepLink?: string };
+          if (jobWithCTA.ctaButtonText && jobWithCTA.ctaDeepLink) {
+            ctaButton = {
+              text: jobWithCTA.ctaButtonText,
+              deepLink: jobWithCTA.ctaDeepLink,
+            };
+          } else if (currentStatus === 'completed') {
+            ctaButton = resolveCTAButton(ctaButtons?.completed ?? completionCTA, job);
+          } else if (currentStatus === 'failed') {
+            ctaButton = resolveCTAButton(ctaButtons?.failed, job);
+          }
+
           await LiveActivity.end({
             jobId: job.jobId,
             finalStatus: currentStatus,
@@ -206,6 +278,7 @@ export function useLiveActivity(
             resultUrl: job.result?.url,
             errorMessage: job.error?.message,
             dismissAfter,
+            ctaButton,
           });
           setIsActive(false);
         }
@@ -215,7 +288,7 @@ export function useLiveActivity(
     };
 
     syncActivity();
-  }, [job, autoStart, autoEnd, dismissAfter, isSupported, isActive]);
+  }, [job, autoStart, autoEnd, dismissAfter, isSupported, isActive, completionCTA, ctaButtons]);
 
   // Manual start
   const start = useCallback(async (): Promise<boolean> => {

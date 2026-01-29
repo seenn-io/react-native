@@ -217,6 +217,23 @@ class SeennLiveActivity: RCTEventEmitter {
         let errorMessage = params["errorMessage"] as? String
         let dismissAfter = params["dismissAfter"] as? Double ?? 300.0
 
+        // CTA Button params
+        var ctaButtonText: String? = nil
+        var ctaDeepLink: String? = nil
+        var ctaButtonStyle: String? = nil
+        var ctaBackgroundColor: String? = nil
+        var ctaTextColor: String? = nil
+        var ctaCornerRadius: Int? = nil
+
+        if let ctaButton = params["ctaButton"] as? NSDictionary {
+            ctaButtonText = ctaButton["text"] as? String
+            ctaDeepLink = ctaButton["deepLink"] as? String
+            ctaButtonStyle = ctaButton["style"] as? String
+            ctaBackgroundColor = ctaButton["backgroundColor"] as? String
+            ctaTextColor = ctaButton["textColor"] as? String
+            ctaCornerRadius = ctaButton["cornerRadius"] as? Int
+        }
+
         if #available(iOS 16.1, *) {
             guard let bridge = SeennLiveActivityRegistry.shared.getBridge() else {
                 resolve(false)
@@ -230,7 +247,13 @@ class SeennLiveActivity: RCTEventEmitter {
                 message: message,
                 resultUrl: resultUrl,
                 errorMessage: errorMessage,
-                dismissAfter: dismissAfter
+                dismissAfter: dismissAfter,
+                ctaButtonText: ctaButtonText,
+                ctaDeepLink: ctaDeepLink,
+                ctaButtonStyle: ctaButtonStyle,
+                ctaBackgroundColor: ctaBackgroundColor,
+                ctaTextColor: ctaTextColor,
+                ctaCornerRadius: ctaCornerRadius
             )
             resolve(result)
         } else {

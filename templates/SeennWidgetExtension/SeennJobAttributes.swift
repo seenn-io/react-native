@@ -24,6 +24,13 @@ public struct SeennJobAttributes: ActivityAttributes {
         public var estimatedEndTime: Date?
         public var resultUrl: String?
         public var errorMessage: String?
+        // CTA Button fields
+        public var ctaButtonText: String?
+        public var ctaDeepLink: String?
+        public var ctaButtonStyle: String?
+        public var ctaBackgroundColor: String?
+        public var ctaTextColor: String?
+        public var ctaCornerRadius: Int?
 
         public init(
             progress: Int,
@@ -34,7 +41,13 @@ public struct SeennJobAttributes: ActivityAttributes {
             stageTotal: Int? = nil,
             estimatedEndTime: Date? = nil,
             resultUrl: String? = nil,
-            errorMessage: String? = nil
+            errorMessage: String? = nil,
+            ctaButtonText: String? = nil,
+            ctaDeepLink: String? = nil,
+            ctaButtonStyle: String? = nil,
+            ctaBackgroundColor: String? = nil,
+            ctaTextColor: String? = nil,
+            ctaCornerRadius: Int? = nil
         ) {
             self.progress = progress
             self.status = status
@@ -45,6 +58,12 @@ public struct SeennJobAttributes: ActivityAttributes {
             self.estimatedEndTime = estimatedEndTime
             self.resultUrl = resultUrl
             self.errorMessage = errorMessage
+            self.ctaButtonText = ctaButtonText
+            self.ctaDeepLink = ctaDeepLink
+            self.ctaButtonStyle = ctaButtonStyle
+            self.ctaBackgroundColor = ctaBackgroundColor
+            self.ctaTextColor = ctaTextColor
+            self.ctaCornerRadius = ctaCornerRadius
         }
     }
 

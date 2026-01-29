@@ -44,7 +44,13 @@ public protocol SeennLiveActivityBridge: AnyObject {
         message: String?,
         resultUrl: String?,
         errorMessage: String?,
-        dismissAfter: TimeInterval
+        dismissAfter: TimeInterval,
+        ctaButtonText: String?,
+        ctaDeepLink: String?,
+        ctaButtonStyle: String?,
+        ctaBackgroundColor: String?,
+        ctaTextColor: String?,
+        ctaCornerRadius: Int?
     ) -> Bool
 
     /// Check if an activity is active

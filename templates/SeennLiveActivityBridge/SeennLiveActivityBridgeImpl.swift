@@ -155,7 +155,13 @@ class SeennLiveActivityBridgeImpl: SeennLiveActivityBridge {
         message: String?,
         resultUrl: String?,
         errorMessage: String?,
-        dismissAfter: TimeInterval
+        dismissAfter: TimeInterval,
+        ctaButtonText: String? = nil,
+        ctaDeepLink: String? = nil,
+        ctaButtonStyle: String? = nil,
+        ctaBackgroundColor: String? = nil,
+        ctaTextColor: String? = nil,
+        ctaCornerRadius: Int? = nil
     ) -> Bool {
         guard let activity = activities[jobId] else {
             return false
@@ -166,7 +172,13 @@ class SeennLiveActivityBridgeImpl: SeennLiveActivityBridge {
             status: finalStatus,
             message: message,
             resultUrl: resultUrl,
-            errorMessage: errorMessage
+            errorMessage: errorMessage,
+            ctaButtonText: ctaButtonText,
+            ctaDeepLink: ctaDeepLink,
+            ctaButtonStyle: ctaButtonStyle,
+            ctaBackgroundColor: ctaBackgroundColor,
+            ctaTextColor: ctaTextColor,
+            ctaCornerRadius: ctaCornerRadius
         )
 
         let policy: ActivityUIDismissalPolicy = dismissAfter > 0

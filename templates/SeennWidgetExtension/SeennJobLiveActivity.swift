@@ -181,8 +181,108 @@ struct LockScreenView: View {
                         .foregroundColor(.white.opacity(0.5))
                 }
             }
+
+            // CTA Button (shown on completed/failed)
+            CTAButtonView(context: context)
         }
         .padding(16)
+    }
+}
+
+// MARK: - CTA Button View
+
+@available(iOS 16.1, *)
+struct CTAButtonView: View {
+    let context: ActivityViewContext<SeennJobAttributes>
+
+    var body: some View {
+        if shouldShowCTA,
+           let text = context.state.ctaButtonText,
+           let deepLink = context.state.ctaDeepLink,
+           let url = URL(string: deepLink) {
+            Link(destination: url) {
+                Text(text)
+                    .font(.system(size: 16, weight: .semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(ctaBackgroundColor)
+                    .foregroundColor(ctaTextColor)
+                    .cornerRadius(ctaCornerRadius)
+            }
+            .padding(.top, 4)
+        }
+    }
+
+    private var shouldShowCTA: Bool {
+        let status = context.state.status
+        return (status == "completed" || status == "failed") &&
+               context.state.ctaButtonText != nil &&
+               context.state.ctaDeepLink != nil
+    }
+
+    private var ctaBackgroundColor: Color {
+        if let hex = context.state.ctaBackgroundColor {
+            return Color(hex: hex)
+        }
+        // Default based on style
+        switch context.state.ctaButtonStyle {
+        case "primary":
+            return .white
+        case "secondary":
+            return .white.opacity(0.2)
+        case "outline":
+            return .clear
+        default:
+            return .white
+        }
+    }
+
+    private var ctaTextColor: Color {
+        if let hex = context.state.ctaTextColor {
+            return Color(hex: hex)
+        }
+        // Default based on style
+        switch context.state.ctaButtonStyle {
+        case "primary":
+            return .black
+        case "secondary", "outline":
+            return .white
+        default:
+            return .black
+        }
+    }
+
+    private var ctaCornerRadius: CGFloat {
+        CGFloat(context.state.ctaCornerRadius ?? 20)
+    }
+}
+
+// MARK: - Color Extension for Hex Support
+
+@available(iOS 16.1, *)
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (255, 0, 0, 0)
+        }
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue: Double(b) / 255,
+            opacity: Double(a) / 255
+        )
     }
 }
 
