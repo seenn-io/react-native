@@ -88,10 +88,15 @@ export interface LiveActivityResult {
   error?: string;
 }
 
+/** Push token event type */
+export type PushTokenType = 'liveActivity' | 'device';
+
 export interface LiveActivityPushTokenEvent {
-  /** Job ID the token is for */
-  jobId: string;
-  /** APNs push token for this Live Activity */
+  /** Type of push token */
+  type: PushTokenType;
+  /** Job ID the token is for (only for liveActivity type) */
+  jobId?: string;
+  /** APNs push token */
   token: string;
 }
 
@@ -366,16 +371,21 @@ export const LiveActivity = {
 
   /**
    * Subscribe to push token events
-   * Called when iOS provides a push token for a Live Activity
+   * Called when iOS provides a push token for a Live Activity or device
    *
-   * @param callback - Function called with job ID and token
+   * @param callback - Function called with token event
    * @returns Unsubscribe function
    *
    * @example
    * ```typescript
    * const unsubscribe = LiveActivity.onPushToken((event) => {
-   *   console.log(`Token for ${event.jobId}: ${event.token}`);
-   *   // Send token to your backend for push updates
+   *   if (event.type === 'liveActivity') {
+   *     console.log(`Live Activity token for ${event.jobId}: ${event.token}`);
+   *     // Send token to your backend for Live Activity push updates
+   *   } else if (event.type === 'device') {
+   *     console.log(`Device push token: ${event.token}`);
+   *     // Send token to your backend for regular push notifications
+   *   }
    * });
    *
    * // Later: unsubscribe();
@@ -385,8 +395,33 @@ export const LiveActivity = {
     const emitter = getEventEmitter();
     if (!emitter) return () => {};
 
-    const subscription = emitter.addListener('SeennLiveActivityPushToken', callback);
-    return () => subscription.remove();
+    // Listen to Live Activity push tokens
+    const liveActivitySubscription = emitter.addListener(
+      'SeennLiveActivityPushToken',
+      (data: { jobId: string; token: string }) => {
+        callback({
+          type: 'liveActivity',
+          jobId: data.jobId,
+          token: data.token,
+        });
+      }
+    );
+
+    // Listen to device push tokens
+    const deviceSubscription = emitter.addListener(
+      'SeennDevicePushToken',
+      (data: { token: string }) => {
+        callback({
+          type: 'device',
+          token: data.token,
+        });
+      }
+    );
+
+    return () => {
+      liveActivitySubscription.remove();
+      deviceSubscription.remove();
+    };
   },
 
   // MARK: - Push Authorization (iOS 12+)

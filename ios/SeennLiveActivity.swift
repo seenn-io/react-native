@@ -8,10 +8,12 @@ class SeennLiveActivity: RCTEventEmitter {
 
     private var hasListeners = false
     private var pendingTokens: [(jobId: String, token: String)] = []
+    private var pendingDeviceTokens: [String] = []
 
     override init() {
         super.init()
         setupPushTokenCallback()
+        setupDevicePushTokenCallback()
     }
 
     // MARK: - RCTEventEmitter
@@ -21,12 +23,12 @@ class SeennLiveActivity: RCTEventEmitter {
     }
 
     override func supportedEvents() -> [String]! {
-        return ["SeennLiveActivityPushToken"]
+        return ["SeennLiveActivityPushToken", "SeennDevicePushToken"]
     }
 
     override func startObserving() {
         hasListeners = true
-        // Flush any tokens that arrived before JS was ready
+        // Flush any Live Activity tokens that arrived before JS was ready
         for pending in pendingTokens {
             self.sendEvent(withName: "SeennLiveActivityPushToken", body: [
                 "jobId": pending.jobId,
@@ -34,6 +36,14 @@ class SeennLiveActivity: RCTEventEmitter {
             ])
         }
         pendingTokens.removeAll()
+
+        // Flush any device tokens that arrived before JS was ready
+        for token in pendingDeviceTokens {
+            self.sendEvent(withName: "SeennDevicePushToken", body: [
+                "token": token
+            ])
+        }
+        pendingDeviceTokens.removeAll()
     }
 
     override func stopObserving() {
@@ -55,6 +65,22 @@ class SeennLiveActivity: RCTEventEmitter {
                     // Buffer token until JS listener is ready
                     self.pendingTokens.append((jobId: jobId, token: token))
                 }
+            }
+        }
+    }
+
+    // MARK: - Device Push Token Callback
+
+    private func setupDevicePushTokenCallback() {
+        SeennPushTokenHandler.shared.setDeviceTokenCallback { [weak self] token in
+            guard let self = self else { return }
+            if self.hasListeners {
+                self.sendEvent(withName: "SeennDevicePushToken", body: [
+                    "token": token
+                ])
+            } else {
+                // Buffer token until JS listener is ready
+                self.pendingDeviceTokens.append(token)
             }
         }
     }
@@ -391,6 +417,14 @@ class SeennLiveActivity: RCTEventEmitter {
                 if let error = error {
                     reject("PUSH_AUTH_ERROR", error.localizedDescription, error)
                 } else {
+                    if granted {
+                        // Swizzle AppDelegate to capture device token
+                        SeennPushTokenHandler.shared.swizzleAppDelegate()
+                        // Register for remote notifications to get device token
+                        DispatchQueue.main.async {
+                            UIApplication.shared.registerForRemoteNotifications()
+                        }
+                    }
                     resolve(granted)
                 }
             }
@@ -402,6 +436,14 @@ class SeennLiveActivity: RCTEventEmitter {
                 if let error = error {
                     reject("PUSH_AUTH_ERROR", error.localizedDescription, error)
                 } else {
+                    if granted {
+                        // Swizzle AppDelegate to capture device token
+                        SeennPushTokenHandler.shared.swizzleAppDelegate()
+                        // Register for remote notifications to get device token
+                        DispatchQueue.main.async {
+                            UIApplication.shared.registerForRemoteNotifications()
+                        }
+                    }
                     resolve(granted)
                 }
             }
@@ -419,6 +461,14 @@ class SeennLiveActivity: RCTEventEmitter {
             if let error = error {
                 reject("PUSH_AUTH_ERROR", error.localizedDescription, error)
             } else {
+                if granted {
+                    // Swizzle AppDelegate to capture device token
+                    SeennPushTokenHandler.shared.swizzleAppDelegate()
+                    // Register for remote notifications to get device token
+                    DispatchQueue.main.async {
+                        UIApplication.shared.registerForRemoteNotifications()
+                    }
+                }
                 resolve(granted)
             }
         }

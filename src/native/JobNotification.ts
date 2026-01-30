@@ -2,7 +2,7 @@
 // MIT License - Open Source
 
 import { Platform } from 'react-native';
-import { LiveActivity } from './LiveActivity';
+import { LiveActivity, LiveActivityPushTokenEvent } from './LiveActivity';
 import { OngoingNotification } from './OngoingNotification';
 
 // MARK: - Unified Types
@@ -277,11 +277,11 @@ export const JobNotification = {
    * Subscribe to push token events (iOS only)
    * On Android, this is a no-op that returns an empty unsubscribe function
    *
-   * @param callback - Function called with job ID and token
+   * @param callback - Function called with token event (type: 'liveActivity' | 'device')
    * @returns Unsubscribe function
    */
   onPushToken(
-    callback: (event: { jobId: string; token: string }) => void
+    callback: (event: LiveActivityPushTokenEvent) => void
   ): () => void {
     if (Platform.OS === 'ios') {
       return LiveActivity.onPushToken(callback);

@@ -12,6 +12,8 @@ export type {
   LiveActivityEndParams,
   LiveActivityResult,
   LiveActivityPushTokenEvent,
+  // Push Token Types (iOS 12+)
+  PushTokenType,
   // Push Authorization Types (iOS 12+)
   PushAuthorizationStatus,
   PushAuthorizationInfo,
