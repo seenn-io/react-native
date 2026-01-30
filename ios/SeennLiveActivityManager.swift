@@ -132,11 +132,3 @@ public enum SeennLiveActivityError: Error, LocalizedError {
     }
 }
 
-// MARK: - Legacy Fallback (iOS < 16.1)
-
-@available(iOS, introduced: 14.0, obsoleted: 16.1)
-@objc(SeennLiveActivityRegistryLegacy)
-public class SeennLiveActivityRegistryLegacy: NSObject {
-    @objc public static let shared = SeennLiveActivityRegistryLegacy()
-    @objc public var isRegistered: Bool { return false }
-}
