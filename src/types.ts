@@ -24,10 +24,8 @@ export type {
   ChildJobSummary,
   ParentWithChildren,
 
-  // SSE Types
+  // Connection Types
   ConnectionState,
-  SSEEventType,
-  SSEEvent,
 
   // In-App Message Types
   InAppMessageType,

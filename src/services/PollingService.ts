@@ -13,8 +13,8 @@ export interface PollingServiceConfig {
 }
 
 /**
- * PollingService for self-hosted backends
- * Alternative to SSE for simpler setups
+ * PollingService - Job state synchronization via REST polling
+ * Simple, reliable, works everywhere
  */
 export class PollingService extends EventEmitter {
   private config: PollingServiceConfig;

@@ -104,7 +104,6 @@ export type {
   InAppMessage,
   ConnectionState,
   ConnectionMode,
-  SSEEventType,
 } from './types';
 
 // Errors

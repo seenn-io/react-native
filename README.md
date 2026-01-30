@@ -9,18 +9,16 @@ Real-time job tracking with Live Activity support for React Native apps. Perfect
 
 ## Features
 
-- ✅ **Real-time updates** via Server-Sent Events (SSE) or Polling
+- ✅ **Real-time updates** via Polling
 - ✅ **iOS Live Activity** - Lock Screen & Dynamic Island (iOS 16.1+)
 - ✅ **Android Ongoing Notification** - Persistent foreground notification
 - ✅ **Multi-job support** - Track up to 5 concurrent Live Activities
 - ✅ **React hooks** for easy integration
 - ✅ **TypeScript** support
-- ✅ **Auto-reconnection** with exponential backoff
-- ✅ **Offline queue** (missed events replay)
 - ✅ **Parent-child jobs** tracking
 - ✅ **ETA countdown** with confidence scoring
-- ✅ **Polling mode** for self-hosted backends
 - ✅ **Provisional Push** (iOS 12+) - no permission prompt
+- ✅ **Standalone mode** - Use with any backend (Firebase, Supabase, custom)
 - ✅ **Open source** (MIT License)
 
 ---
@@ -46,21 +44,21 @@ import { Seenn } from '@seenn/react-native';
 
 const seenn = new Seenn({
   baseUrl: 'https://api.seenn.io', // Seenn Cloud
-  // OR
-  baseUrl: 'https://api.yourapp.com', // Your own backend
-  authToken: 'your_jwt_token',
+  // OR: 'https://api.yourapp.com' for self-hosted
+  apiKey: 'pk_your_key',
+  userId: 'user_123',
   debug: true, // Enable logging
 });
 ```
 
-### 2. Connect to SSE
+### 2. Connect & Start Polling
 
 ```typescript
 import { useEffect } from 'react';
 
 function App() {
   useEffect(() => {
-    // Connect to SSE for real-time updates
+    // Connect and start polling for updates
     seenn.connect('user_123');
 
     // Cleanup on unmount
@@ -100,16 +98,15 @@ function VideoGenerationScreen({ jobId }) {
 
 ---
 
-## Polling Mode (Self-Hosted)
+## Polling Mode
 
-For simpler self-hosted setups without SSE infrastructure:
+Configure polling interval for your needs:
 
 ```typescript
 const seenn = new Seenn({
   baseUrl: 'https://api.yourcompany.com',
-  authToken: 'your_token',
-  mode: 'polling',        // Use polling instead of SSE
-  pollInterval: 5000,     // Poll every 5 seconds
+  apiKey: 'pk_your_key',  // or any token for self-hosted
+  pollInterval: 5000,     // Poll every 5 seconds (default: 3000)
 });
 
 await seenn.connect(userId);
@@ -524,12 +521,11 @@ const seenn = new Seenn({
   baseUrl: 'https://api.seenn.io',
 
   // Optional
-  authToken: 'your_jwt_token', // For authentication
-  sseUrl: 'https://api.seenn.io/v1/sse', // Custom SSE endpoint
-  reconnect: true, // Auto-reconnect on disconnect
-  reconnectInterval: 1000, // Initial reconnect delay (ms)
-  maxReconnectAttempts: 10, // Max reconnect attempts
-  debug: false, // Enable debug logging
+  apiKey: 'pk_your_key',   // API key (pk_* for Seenn Cloud)
+  userId: 'user_123',      // User ID for job filtering
+  pollInterval: 3000,      // Polling interval in ms (default: 3000)
+  basePath: '/v1',         // API base path (default: '/v1')
+  debug: false,            // Enable debug logging
 });
 ```
 
@@ -542,7 +538,7 @@ const seenn = new Seenn({
 ```typescript
 const seenn = new Seenn({
   baseUrl: 'https://api.seenn.io',
-  authToken: 'your_api_key',
+  apiKey: 'pk_your_key',
 });
 ```
 
@@ -551,16 +547,16 @@ const seenn = new Seenn({
 ```typescript
 const seenn = new Seenn({
   baseUrl: 'https://api.yourapp.com',
-  authToken: 'your_jwt_token',
+  apiKey: 'your_jwt_or_api_key', // Any token format works
+  basePath: '/api/seenn',        // Custom path if needed
 });
 ```
 
 **Requirements for self-hosted:**
 
-1. Implement SSE endpoint (`GET /v1/sse?userId={userId}`)
-2. Follow [Seenn protocol spec](https://docs.seenn.io/self-hosted/protocol-spec)
-3. Handle job state management (DynamoDB or PostgreSQL)
-4. Set up Redis pub/sub for real-time events
+1. Implement job endpoints (`GET /jobs/:id`, `GET /jobs?userId=...`)
+2. Return jobs in [Seenn format](https://docs.seenn.io/self-hosted)
+3. Handle job state management (any database)
 
 See [Self-Hosted Guide](https://docs.seenn.io/self-hosted) for details.
 
@@ -690,29 +686,13 @@ type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecti
 
 ## FAQ
 
-### How does this differ from polling?
+### Why polling instead of WebSockets/SSE?
 
-**Polling (old way):**
-
-```typescript
-// ❌ Inefficient, high latency, server load
-setInterval(async () => {
-  const job = await fetch(`/jobs/${jobId}`);
-  updateUI(job);
-}, 2000); // Check every 2 seconds
-```
-
-**Seenn SSE (better):**
-
-```typescript
-// ✅ Real-time, low latency, efficient
-const job = useSeennJob(seenn, jobId);
-// Updates instantly when job changes
-```
-
-### Does this work offline?
-
-Yes! Seenn buffers missed events for 30 seconds. When you reconnect, missed updates are replayed automatically.
+Polling is simpler, more reliable, and works everywhere:
+- No connection state to manage
+- Works behind proxies and firewalls
+- Easy to self-host (just REST endpoints)
+- 3 second default interval is fast enough for job progress
 
 ### What's the cost?
 
