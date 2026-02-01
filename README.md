@@ -571,7 +571,7 @@ import { Seenn, useSeennJobProgress } from '@seenn/react-native';
 
 const seenn = new Seenn({
   baseUrl: 'https://api.yourapp.com',
-  authToken: 'user_jwt_token',
+  apiKey: 'your_jwt_token',
 });
 
 function VideoGeneratorScreen() {
