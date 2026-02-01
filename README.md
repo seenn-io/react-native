@@ -3,6 +3,7 @@
 > **Open Source Job State Transport SDK for React Native**
 
 [![npm version](https://badge.fury.io/js/@seenn%2Freact-native.svg)](https://www.npmjs.com/package/@seenn/react-native)
+[![npm downloads](https://img.shields.io/npm/dw/@seenn/react-native.svg)](https://www.npmjs.com/package/@seenn/react-native)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Real-time job tracking with Live Activity support for React Native apps. Perfect for AI video generation, image processing, and long-running async tasks.
