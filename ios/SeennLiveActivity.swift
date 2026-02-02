@@ -53,7 +53,7 @@ class SeennLiveActivity: RCTEventEmitter {
     // MARK: - Push Token Callback
 
     private func setupPushTokenCallback() {
-        if #available(iOS 16.1, *) {
+        if #available(iOS 16.2, *) {
             SeennLiveActivityRegistry.shared.setPushTokenCallback { [weak self] jobId, token in
                 guard let self = self else { return }
                 if self.hasListeners {
@@ -92,7 +92,7 @@ class SeennLiveActivity: RCTEventEmitter {
         resolve: @escaping RCTPromiseResolveBlock,
         reject: @escaping RCTPromiseRejectBlock
     ) {
-        if #available(iOS 16.1, *) {
+        if #available(iOS 16.2, *) {
             guard let bridge = SeennLiveActivityRegistry.shared.getBridge() else {
                 resolve(false)
                 return
@@ -108,7 +108,7 @@ class SeennLiveActivity: RCTEventEmitter {
         resolve: @escaping RCTPromiseResolveBlock,
         reject: @escaping RCTPromiseRejectBlock
     ) {
-        if #available(iOS 16.1, *) {
+        if #available(iOS 16.2, *) {
             guard let bridge = SeennLiveActivityRegistry.shared.getBridge() else {
                 resolve(false)
                 return
@@ -124,7 +124,7 @@ class SeennLiveActivity: RCTEventEmitter {
         resolve: @escaping RCTPromiseResolveBlock,
         reject: @escaping RCTPromiseRejectBlock
     ) {
-        if #available(iOS 16.1, *) {
+        if #available(iOS 16.2, *) {
             resolve(SeennLiveActivityRegistry.shared.isRegistered)
         } else {
             resolve(false)
@@ -149,7 +149,7 @@ class SeennLiveActivity: RCTEventEmitter {
         let initialProgress = params["initialProgress"] as? Int ?? 0
         let initialMessage = params["initialMessage"] as? String
 
-        if #available(iOS 16.1, *) {
+        if #available(iOS 16.2, *) {
             guard let bridge = SeennLiveActivityRegistry.shared.getBridge() else {
                 resolve([
                     "success": false,
@@ -172,7 +172,7 @@ class SeennLiveActivity: RCTEventEmitter {
         } else {
             resolve([
                 "success": false,
-                "error": "Live Activities require iOS 16.1+"
+                "error": "Live Activities require iOS 16.2+"
             ])
         }
     }
@@ -202,7 +202,7 @@ class SeennLiveActivity: RCTEventEmitter {
             eta = Date(timeIntervalSince1970: timestamp)
         }
 
-        if #available(iOS 16.1, *) {
+        if #available(iOS 16.2, *) {
             guard let bridge = SeennLiveActivityRegistry.shared.getBridge() else {
                 resolve(false)
                 return
@@ -261,7 +261,7 @@ class SeennLiveActivity: RCTEventEmitter {
             ctaCornerRadius = ctaButton["cornerRadius"] as? Int
         }
 
-        if #available(iOS 16.1, *) {
+        if #available(iOS 16.2, *) {
             guard let bridge = SeennLiveActivityRegistry.shared.getBridge() else {
                 resolve(false)
                 return
@@ -295,7 +295,7 @@ class SeennLiveActivity: RCTEventEmitter {
         resolve: @escaping RCTPromiseResolveBlock,
         reject: @escaping RCTPromiseRejectBlock
     ) {
-        if #available(iOS 16.1, *) {
+        if #available(iOS 16.2, *) {
             guard let bridge = SeennLiveActivityRegistry.shared.getBridge() else {
                 resolve([])
                 return
@@ -312,7 +312,7 @@ class SeennLiveActivity: RCTEventEmitter {
         resolve: @escaping RCTPromiseResolveBlock,
         reject: @escaping RCTPromiseRejectBlock
     ) {
-        if #available(iOS 16.1, *) {
+        if #available(iOS 16.2, *) {
             guard let bridge = SeennLiveActivityRegistry.shared.getBridge() else {
                 resolve(false)
                 return
@@ -331,7 +331,7 @@ class SeennLiveActivity: RCTEventEmitter {
         resolve: @escaping RCTPromiseResolveBlock,
         reject: @escaping RCTPromiseRejectBlock
     ) {
-        if #available(iOS 16.1, *) {
+        if #available(iOS 16.2, *) {
             guard let bridge = SeennLiveActivityRegistry.shared.getBridge() else {
                 resolve(false)
                 return
@@ -347,7 +347,7 @@ class SeennLiveActivity: RCTEventEmitter {
         resolve: @escaping RCTPromiseResolveBlock,
         reject: @escaping RCTPromiseRejectBlock
     ) {
-        if #available(iOS 16.1, *) {
+        if #available(iOS 16.2, *) {
             guard let bridge = SeennLiveActivityRegistry.shared.getBridge() else {
                 resolve(false)
                 return

@@ -7,7 +7,7 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
-@available(iOS 16.1, *)
+@available(iOS 16.2, *)
 @main
 struct SeennWidgetBundle: WidgetBundle {
     var body: some Widget {
@@ -15,7 +15,7 @@ struct SeennWidgetBundle: WidgetBundle {
     }
 }
 
-@available(iOS 16.1, *)
+@available(iOS 16.2, *)
 struct SeennJobLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: SeennJobAttributes.self) { context in
@@ -112,7 +112,7 @@ struct SeennJobLiveActivity: Widget {
 
 // MARK: - Lock Screen View
 
-@available(iOS 16.1, *)
+@available(iOS 16.2, *)
 struct LockScreenView: View {
     let context: ActivityViewContext<SeennJobAttributes>
 
@@ -191,7 +191,7 @@ struct LockScreenView: View {
 
 // MARK: - CTA Button View
 
-@available(iOS 16.1, *)
+@available(iOS 16.2, *)
 struct CTAButtonView: View {
     let context: ActivityViewContext<SeennJobAttributes>
 
@@ -259,7 +259,7 @@ struct CTAButtonView: View {
 
 // MARK: - Color Extension for Hex Support
 
-@available(iOS 16.1, *)
+@available(iOS 16.2, *)
 extension Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
@@ -288,7 +288,7 @@ extension Color {
 
 // MARK: - Helper Functions
 
-@available(iOS 16.1, *)
+@available(iOS 16.2, *)
 func iconForStatus(_ status: String) -> String {
     switch status {
     case "completed":
@@ -304,7 +304,7 @@ func iconForStatus(_ status: String) -> String {
     }
 }
 
-@available(iOS 16.1, *)
+@available(iOS 16.2, *)
 func iconForJobType(_ jobType: String) -> String {
     // Customize based on your job types
     switch jobType.lowercased() {
@@ -325,7 +325,7 @@ func iconForJobType(_ jobType: String) -> String {
     }
 }
 
-@available(iOS 16.1, *)
+@available(iOS 16.2, *)
 func colorForStatus(_ status: String) -> Color {
     switch status {
     case "completed":

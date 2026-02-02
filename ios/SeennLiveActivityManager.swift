@@ -8,7 +8,7 @@ import Foundation
 // Your app must implement SeennLiveActivityBridge and register it during app init.
 // See: https://docs.seenn.io/client/react-native#live-activity-setup
 
-@available(iOS 16.1, *)
+@available(iOS 16.2, *)
 public protocol SeennLiveActivityBridge: AnyObject {
     /// Check if Live Activities are enabled on this device
     func areActivitiesEnabled() -> Bool
@@ -71,7 +71,7 @@ public protocol SeennLiveActivityBridge: AnyObject {
 
 // MARK: - Bridge Registry
 
-@available(iOS 16.1, *)
+@available(iOS 16.2, *)
 @objc(SeennLiveActivityRegistry)
 public class SeennLiveActivityRegistry: NSObject {
     @objc public static let shared = SeennLiveActivityRegistry()

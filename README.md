@@ -11,7 +11,7 @@ Real-time job tracking with Live Activity support for React Native apps. Perfect
 ## Features
 
 - ✅ **Real-time updates** via Polling
-- ✅ **iOS Live Activity** - Lock Screen & Dynamic Island (iOS 16.1+)
+- ✅ **iOS Live Activity** - Lock Screen & Dynamic Island (iOS 16.2+)
 - ✅ **Android Ongoing Notification** - Persistent foreground notification
 - ✅ **Multi-job support** - Track up to 5 concurrent Live Activities
 - ✅ **React hooks** for easy integration
@@ -237,7 +237,7 @@ function RunningJobs() {
 
 ## iOS Live Activity
 
-Show job progress on the Lock Screen and Dynamic Island (iOS 16.1+).
+Show job progress on the Lock Screen and Dynamic Island (iOS 16.2+).
 
 ### Setup
 

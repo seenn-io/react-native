@@ -123,7 +123,7 @@ export const JobNotification = {
 
   /**
    * Check if job notifications are supported on this device
-   * - iOS: Requires iOS 16.1+ with Live Activities enabled
+   * - iOS: Requires iOS 16.2+ with Live Activities enabled
    * - Android: Requires Android 8.0+ (API 26)
    */
   async isSupported(): Promise<boolean> {

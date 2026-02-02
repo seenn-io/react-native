@@ -4,7 +4,7 @@
 
 export { Seenn } from './Seenn';
 
-// Live Activity (iOS 16.1+) - Native Module
+// Live Activity (iOS 16.2+) - Native Module
 export { LiveActivity } from './native/LiveActivity';
 export type {
   LiveActivityStartParams,
