@@ -170,7 +170,7 @@ function getEventEmitter(): NativeEventEmitter | null {
 export const LiveActivity = {
   /**
    * Check if Live Activities are supported on this device
-   * Returns false on Android and iOS < 16.2
+   * Returns false on Android and iOS < 16.1
    */
   async isSupported(): Promise<boolean> {
     if (Platform.OS !== 'ios') return false;

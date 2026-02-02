@@ -7,7 +7,7 @@
  * Requirements:
  * - expo-live-activity package installed
  * - Expo SDK 50+
- * - iOS 16.2+
+ * - iOS 16.1+
  * - Expo Dev Client (not Expo Go)
  *
  * @see https://github.com/software-mansion-labs/expo-live-activity

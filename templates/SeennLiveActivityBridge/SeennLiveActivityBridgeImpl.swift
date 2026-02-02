@@ -10,7 +10,7 @@ import SeennReactNative
 //
 // Copy this file to your Xcode project and register it in AppDelegate.
 
-@available(iOS 16.2, *)
+@available(iOS 16.1, *)
 class SeennLiveActivityBridgeImpl: SeennLiveActivityBridge {
 
     static let shared = SeennLiveActivityBridgeImpl()
