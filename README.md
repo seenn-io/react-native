@@ -47,7 +47,6 @@ const seenn = new Seenn({
   baseUrl: 'https://api.seenn.io', // Seenn Cloud
   // OR: 'https://api.yourapp.com' for self-hosted
   apiKey: 'pk_your_key',
-  userId: 'user_123',
   debug: true, // Enable logging
 });
 ```
@@ -107,7 +106,7 @@ Configure polling interval for your needs:
 const seenn = new Seenn({
   baseUrl: 'https://api.yourcompany.com',
   apiKey: 'pk_your_key',  // or any token for self-hosted
-  pollInterval: 5000,     // Poll every 5 seconds (default: 3000)
+  pollInterval: 3000,     // Poll every 3 seconds (default: 5000)
 });
 
 await seenn.connect(userId);
@@ -523,8 +522,7 @@ const seenn = new Seenn({
 
   // Optional
   apiKey: 'pk_your_key',   // API key (pk_* for Seenn Cloud)
-  userId: 'user_123',      // User ID for job filtering
-  pollInterval: 3000,      // Polling interval in ms (default: 3000)
+  pollInterval: 5000,      // Polling interval in ms (default: 5000)
   basePath: '/v1',         // API base path (default: '/v1')
   debug: false,            // Enable debug logging
 });
@@ -702,11 +700,10 @@ Yes! The SDK is open source (MIT). You can:
 
 ## Links
 
-- 📖 [Documentation](https://docs.seenn.io)
-- 🌐 [Website](https://seenn.io)
-- 💬 [Discord](https://discord.gg/seenn)
-- 🐙 [GitHub](https://github.com/seenn-io/sdk)
-- 📦 [npm](https://www.npmjs.com/package/@seenn/react-native)
+- [Documentation](https://docs.seenn.io)
+- [Website](https://seenn.io)
+- [GitHub](https://github.com/seenn-io/react-native)
+- [npm](https://www.npmjs.com/package/@seenn/react-native)
 
 ---
 
@@ -718,15 +715,11 @@ MIT © [Seenn](https://seenn.io)
 
 ## Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](https://github.com/seenn-io/sdk/blob/main/CONTRIBUTING.md)
+Contributions welcome!
 
 ```bash
-git clone https://github.com/seenn-io/sdk
-cd seenn-sdk
-pnpm install
-pnpm --filter @seenn/react-native dev
+git clone https://github.com/seenn-io/react-native
+cd react-native
+npm install
+npm run dev
 ```
-
----
-
-Made with ❤️ by [Seenn](https://seenn.io)
