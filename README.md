@@ -687,29 +687,16 @@ type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecti
 
 ## FAQ
 
-### Why polling instead of WebSockets/SSE?
-
-Polling is simpler, more reliable, and works everywhere:
-- No connection state to manage
-- Works behind proxies and firewalls
-- Easy to self-host (just REST endpoints)
-- 3 second default interval is fast enough for job progress
-
-### What's the cost?
-
-- **Seenn Cloud**: $0-399/mo based on job volume
-- **Self-Hosted**: $0 SDK (open source), your infrastructure cost
-
 ### Can I use this without Seenn Cloud?
 
 Yes! The SDK is open source (MIT). You can:
 
-1. Use Seenn Cloud (recommended, easy)
+1. Use Seenn Cloud (recommended, easy setup)
 2. Self-host with your own backend ([guide](https://docs.seenn.io/self-hosted))
 
 ### Does this support iOS Live Activity?
 
-**Yes!** As of v0.2.0, iOS Live Activity is fully supported. See the [Live Activity Setup](#ios-live-activity) section.
+**Yes!** iOS Live Activity is fully supported. See the [Live Activity Setup](#ios-live-activity) section.
 
 ---
 
