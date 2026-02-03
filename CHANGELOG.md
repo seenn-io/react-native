@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.8] - 2026-02-04
+
+### Fixed
+- Removed `#Preview` macro from SeennJobLiveActivity.swift template (requires iOS 17+, not compatible with iOS 16.2 minimum)
+
 ## [0.9.7] - 2026-02-04
 
 ### Changed

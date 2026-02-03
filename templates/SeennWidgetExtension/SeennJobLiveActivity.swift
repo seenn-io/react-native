@@ -341,32 +341,3 @@ func colorForStatus(_ status: String) -> Color {
     }
 }
 
-// MARK: - Preview
-
-@available(iOS 16.2, *)
-#Preview("Lock Screen", as: .content, using: SeennJobAttributes(
-    jobId: "job_123",
-    title: "Generating Video...",
-    jobType: "video-generation"
-)) {
-    SeennJobLiveActivity()
-} contentStates: {
-    SeennJobAttributes.ContentState(
-        progress: 45,
-        status: "running",
-        message: "Encoding frames...",
-        stageName: "Encoding",
-        stageIndex: 2,
-        stageTotal: 3
-    )
-    SeennJobAttributes.ContentState(
-        progress: 100,
-        status: "completed",
-        message: "Video ready!"
-    )
-    SeennJobAttributes.ContentState(
-        progress: 30,
-        status: "failed",
-        errorMessage: "Processing failed"
-    )
-}
