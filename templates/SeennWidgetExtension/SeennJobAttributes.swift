@@ -12,7 +12,7 @@ import Foundation
 
 /// Attributes for Seenn Job Live Activity
 /// Must match the definition in SeennReactNative
-@available(iOS 16.1, *)
+@available(iOS 16.2, *)
 public struct SeennJobAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         public var progress: Int

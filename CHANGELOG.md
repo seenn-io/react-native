@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.7] - 2026-02-04
+
+### Changed
+- **Minimum iOS version updated to 16.2** for Live Activity push token support
+- The `pushType: .token` parameter and `ActivityContent` API were added in iOS 16.2
+- All `@available` annotations in Swift templates updated from 16.1 to 16.2
+
+### Why iOS 16.2?
+While Live Activities were introduced in iOS 16.1, the APIs required for remote push updates (which is Seenn's core feature) were added in iOS 16.2:
+- `Activity.request(pushType: .token)` - iOS 16.2+
+- `ActivityContent` struct - iOS 16.2+
+- `activity.update(ActivityContent(...))` - iOS 16.2+
+
 ## [0.5.1] - 2026-01-28
 
 ### Fixed
