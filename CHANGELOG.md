@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.9] - 2026-02-04
+
+### Added
+- **Auto Push Token Registration** - SDK now automatically captures device push tokens on app restart
+  - `refreshDevicePushToken()` - Refresh token if authorization already granted (call on app launch)
+  - `useSeennPush()` hook - Convenience hook for push token management with auto-refresh
+  - Auto-swizzle on SDK init - No longer requires permission request to setup token capture
+
+### Why This Matters
+Previously, if a user granted push permission and then restarted the app, the device token would not be captured because swizzling only happened during permission request. Now the SDK swizzles immediately on init, ensuring tokens are always captured.
+
 ## [0.9.8] - 2026-02-04
 
 ### Fixed

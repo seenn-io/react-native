@@ -14,6 +14,9 @@ class SeennLiveActivity: RCTEventEmitter {
         super.init()
         setupPushTokenCallback()
         setupDevicePushTokenCallback()
+        // Auto-swizzle AppDelegate on init to capture device tokens
+        // even when permission was granted in a previous session
+        SeennPushTokenHandler.shared.swizzleAppDelegate()
     }
 
     // MARK: - RCTEventEmitter
@@ -470,6 +473,26 @@ class SeennLiveActivity: RCTEventEmitter {
                     }
                 }
                 resolve(granted)
+            }
+        }
+    }
+
+    // MARK: - Refresh Device Push Token
+
+    @objc(refreshDevicePushToken:reject:)
+    func refreshDevicePushToken(
+        resolve: @escaping RCTPromiseResolveBlock,
+        reject: @escaping RCTPromiseRejectBlock
+    ) {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            if settings.authorizationStatus == .authorized ||
+               settings.authorizationStatus == .provisional {
+                DispatchQueue.main.async {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+                resolve(true)
+            } else {
+                resolve(false)
             }
         }
     }

@@ -86,6 +86,10 @@ export type {
   UseJobNotificationResult,
 } from './hooks/useJobNotification';
 
+// Push Token Hook (iOS)
+export { useSeennPush } from './hooks/useSeennPush';
+export type { UseSeennPushOptions, UseSeennPushResult } from './hooks/useSeennPush';
+
 // Types
 export type {
   SeennConfig,

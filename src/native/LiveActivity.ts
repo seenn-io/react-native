@@ -550,6 +550,34 @@ export const LiveActivity = {
       return false;
     }
   },
+
+  /**
+   * Refresh device push token if authorization is already granted
+   *
+   * Call this on app launch to ensure you have the latest device
+   * push token even if permission was granted in a previous session.
+   * The token will be delivered via `onPushToken` callback.
+   *
+   * @returns true if token refresh was triggered, false if not authorized
+   *
+   * @example
+   * ```typescript
+   * // On app launch
+   * const refreshed = await LiveActivity.refreshDevicePushToken();
+   * if (refreshed) {
+   *   console.log('Token refresh triggered');
+   * }
+   * ```
+   */
+  async refreshDevicePushToken(): Promise<boolean> {
+    if (Platform.OS !== 'ios') return false;
+    if (!NativeModule) return false;
+    try {
+      return await NativeModule.refreshDevicePushToken();
+    } catch {
+      return false;
+    }
+  },
 };
 
 export default LiveActivity;

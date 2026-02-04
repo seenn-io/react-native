@@ -45,6 +45,9 @@ RCT_EXTERN_METHOD(requestProvisionalPushAuthorization:(RCTPromiseResolveBlock)re
 RCT_EXTERN_METHOD(requestStandardPushAuthorization:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(refreshDevicePushToken:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+
 + (BOOL)requiresMainQueueSetup
 {
   return YES;
