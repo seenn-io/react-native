@@ -2,8 +2,9 @@
 // MIT License - Open Source
 
 import { Platform } from 'react-native';
-import { LiveActivity, LiveActivityPushTokenEvent } from './LiveActivity';
+import { LiveActivity, LiveActivityResult, LiveActivityPushTokenEvent } from './LiveActivity';
 import { OngoingNotification } from './OngoingNotification';
+import { SeennErrorCode } from '../errors/codes';
 
 // MARK: - Unified Types
 
@@ -70,6 +71,8 @@ export interface JobNotificationResult {
   notificationId?: number; // Android
   /** Error message if failed */
   error?: string;
+  /** Error code for programmatic handling */
+  code?: SeennErrorCode;
 }
 
 // MARK: - Unified JobNotification API
@@ -82,7 +85,7 @@ export interface JobNotificationResult {
  *
  * @example
  * ```typescript
- * import { JobNotification } from '@seenn/react-native';
+ * import { JobNotification, SeennErrorCode } from '@seenn/react-native';
  *
  * // Check support (works on both platforms)
  * const supported = await JobNotification.isSupported();
@@ -93,6 +96,10 @@ export interface JobNotificationResult {
  *   title: 'Processing video...',
  *   initialProgress: 0,
  * });
+ *
+ * if (!result.success) {
+ *   console.error(`Error [${result.code}]: ${result.error}`);
+ * }
  *
  * // Update progress
  * await JobNotification.update({
@@ -123,7 +130,7 @@ export const JobNotification = {
 
   /**
    * Check if job notifications are supported on this device
-   * - iOS: Requires iOS 16.1+ with Live Activities enabled
+   * - iOS: Requires iOS 16.2+ with Live Activities enabled
    * - Android: Requires Android 8.0+ (API 26)
    */
   async isSupported(): Promise<boolean> {
@@ -168,51 +175,88 @@ export const JobNotification = {
    * Start a new job notification
    *
    * @param params - Notification parameters
-   * @returns Result with success status
+   * @returns Result with success status and error code
    */
   async start(params: JobNotificationStartParams): Promise<JobNotificationResult> {
     if (Platform.OS === 'ios') {
-      return LiveActivity.start(params);
+      const result = await LiveActivity.start(params);
+      return {
+        success: result.success,
+        jobId: result.jobId,
+        activityId: result.activityId,
+        error: result.error,
+        code: result.code,
+      };
     } else if (Platform.OS === 'android') {
       return OngoingNotification.start(params);
     }
-    return { success: false, error: 'Platform not supported' };
+    return {
+      success: false,
+      error: 'Platform not supported',
+      code: SeennErrorCode.PLATFORM_NOT_SUPPORTED,
+    };
   },
 
   /**
    * Update an existing job notification
    *
    * @param params - Update parameters
-   * @returns true if updated successfully
+   * @returns Result with success status and error code
    */
-  async update(params: JobNotificationUpdateParams): Promise<boolean> {
+  async update(params: JobNotificationUpdateParams): Promise<JobNotificationResult> {
     if (Platform.OS === 'ios') {
-      return LiveActivity.update(params);
+      const result = await LiveActivity.update(params);
+      return {
+        success: result.success,
+        jobId: result.jobId,
+        error: result.error,
+        code: result.code,
+      };
     } else if (Platform.OS === 'android') {
-      return OngoingNotification.update(params);
+      const success = await OngoingNotification.update(params);
+      return {
+        success,
+        jobId: params.jobId,
+        error: success ? undefined : 'Update failed',
+        code: success ? undefined : SeennErrorCode.UNKNOWN_ERROR,
+      };
     }
-    return false;
+    return {
+      success: false,
+      error: 'Platform not supported',
+      code: SeennErrorCode.PLATFORM_NOT_SUPPORTED,
+    };
   },
 
   /**
    * End a job notification
    *
    * @param params - End parameters
-   * @returns true if ended successfully
+   * @returns Result with success status and error code
    */
-  async end(params: JobNotificationEndParams): Promise<boolean> {
+  async end(params: JobNotificationEndParams): Promise<JobNotificationResult> {
     if (Platform.OS === 'ios') {
-      // Convert dismissAfter to seconds for iOS if needed
-      const iosParams = {
-        ...params,
-        dismissAfter: params.dismissAfter,
+      const result = await LiveActivity.end(params);
+      return {
+        success: result.success,
+        jobId: result.jobId,
+        error: result.error,
+        code: result.code,
       };
-      return LiveActivity.end(iosParams);
     } else if (Platform.OS === 'android') {
-      // Android uses milliseconds
-      return OngoingNotification.end(params);
+      const success = await OngoingNotification.end(params);
+      return {
+        success,
+        jobId: params.jobId,
+        error: success ? undefined : 'End failed',
+        code: success ? undefined : SeennErrorCode.UNKNOWN_ERROR,
+      };
     }
-    return false;
+    return {
+      success: false,
+      error: 'Platform not supported',
+      code: SeennErrorCode.PLATFORM_NOT_SUPPORTED,
+    };
   },
 
   /**
@@ -248,29 +292,59 @@ export const JobNotification = {
    * Cancel a specific job notification immediately
    *
    * @param jobId - Job ID to cancel
-   * @returns true if cancelled successfully
+   * @returns Result with success status and error code
    */
-  async cancel(jobId: string): Promise<boolean> {
+  async cancel(jobId: string): Promise<JobNotificationResult> {
     if (Platform.OS === 'ios') {
-      return LiveActivity.cancel(jobId);
+      const result = await LiveActivity.cancel(jobId);
+      return {
+        success: result.success,
+        jobId: result.jobId,
+        error: result.error,
+        code: result.code,
+      };
     } else if (Platform.OS === 'android') {
-      return OngoingNotification.cancel(jobId);
+      const success = await OngoingNotification.cancel(jobId);
+      return {
+        success,
+        jobId,
+        error: success ? undefined : 'Cancel failed',
+        code: success ? undefined : SeennErrorCode.UNKNOWN_ERROR,
+      };
     }
-    return false;
+    return {
+      success: false,
+      error: 'Platform not supported',
+      code: SeennErrorCode.PLATFORM_NOT_SUPPORTED,
+    };
   },
 
   /**
    * Cancel all job notifications immediately
    *
-   * @returns true if cancelled successfully
+   * @returns Result with success status and error code
    */
-  async cancelAll(): Promise<boolean> {
+  async cancelAll(): Promise<JobNotificationResult> {
     if (Platform.OS === 'ios') {
-      return LiveActivity.cancelAll();
+      const result = await LiveActivity.cancelAll();
+      return {
+        success: result.success,
+        error: result.error,
+        code: result.code,
+      };
     } else if (Platform.OS === 'android') {
-      return OngoingNotification.cancelAll();
+      const success = await OngoingNotification.cancelAll();
+      return {
+        success,
+        error: success ? undefined : 'Cancel all failed',
+        code: success ? undefined : SeennErrorCode.UNKNOWN_ERROR,
+      };
     }
-    return false;
+    return {
+      success: false,
+      error: 'Platform not supported',
+      code: SeennErrorCode.PLATFORM_NOT_SUPPORTED,
+    };
   },
 
   /**
@@ -280,9 +354,7 @@ export const JobNotification = {
    * @param callback - Function called with token event (type: 'liveActivity' | 'device')
    * @returns Unsubscribe function
    */
-  onPushToken(
-    callback: (event: LiveActivityPushTokenEvent) => void
-  ): () => void {
+  onPushToken(callback: (event: LiveActivityPushTokenEvent) => void): () => void {
     if (Platform.OS === 'ios') {
       return LiveActivity.onPushToken(callback);
     }

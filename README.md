@@ -20,6 +20,8 @@ Real-time job tracking with Live Activity support for React Native apps. Perfect
 - ✅ **ETA countdown** with confidence scoring
 - ✅ **Provisional Push** (iOS 12+) - no permission prompt
 - ✅ **Standalone mode** - Use with any backend (Firebase, Supabase, custom)
+- ✅ **Error codes** - Standardized error handling with `SeennErrorCode`
+- ✅ **Debug mode** - Detailed logging for development
 - ✅ **Open source** (MIT License)
 
 ---
@@ -331,6 +333,37 @@ const activeIds = await LiveActivity.getActiveIds();
 await LiveActivity.cancelAll();
 ```
 
+### Error Handling with Error Codes
+
+All Live Activity operations return a result with error codes for programmatic handling:
+
+```typescript
+import { LiveActivity, SeennErrorCode, SDK_VERSION } from '@seenn/react-native';
+
+console.log('SDK Version:', SDK_VERSION); // '0.9.10'
+
+const result = await LiveActivity.start({
+  jobId: 'job_123',
+  title: 'Processing...',
+});
+
+if (!result.success) {
+  switch (result.code) {
+    case SeennErrorCode.PLATFORM_NOT_SUPPORTED:
+      console.log('Not on iOS');
+      break;
+    case SeennErrorCode.INVALID_JOB_ID:
+      console.log('Invalid job ID');
+      break;
+    case SeennErrorCode.NATIVE_MODULE_NOT_FOUND:
+      console.log('Native setup incomplete');
+      break;
+    default:
+      console.log(`Error [${result.code}]: ${result.error}`);
+  }
+}
+```
+
 ### Multi-Job Support
 
 iOS allows up to 5 concurrent Live Activities per app:
@@ -393,6 +426,30 @@ if (status.canRequestFullAuthorization) {
 
 > **Note:** Provisional notifications appear silently in Notification Center only.
 > Users can "Keep" or "Turn Off" from their first notification.
+
+### useSeennPush Hook with Debug Mode
+
+```typescript
+import { useSeennPush } from '@seenn/react-native';
+
+function App() {
+  const { token, authorizationStatus, requestProvisional } = useSeennPush({
+    debug: true, // Enable detailed logging in __DEV__
+    autoRefresh: true, // Auto-refresh token on mount
+    onTokenReceived: async (token) => {
+      await api.registerDevice({ userId, deviceToken: token });
+    },
+    onAuthorizationStatus: (status) => {
+      console.log('Auth status:', status);
+    },
+    onError: (error) => {
+      console.error('Push error:', error);
+    },
+  });
+
+  return <YourApp />;
+}
+```
 
 ---
 

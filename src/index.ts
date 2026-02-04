@@ -2,6 +2,22 @@
 // MIT License - Open Source
 // https://github.com/seenn-io/seenn-sdk
 
+// Version Info
+export { SDK_VERSION, SDK_NAME, SDK_USER_AGENT } from './version';
+
+// Error Codes
+export { SeennErrorCode } from './errors/codes';
+export type { SeennErrorCode as SeennErrorCodeType } from './errors/codes';
+
+// Validation Utilities
+export {
+  validateJobId,
+  validateTitle,
+  validateProgress,
+  validateStatus,
+} from './utils/validation';
+export type { ValidationError } from './utils/validation';
+
 export { Seenn } from './Seenn';
 
 // Live Activity (iOS 16.1+) - Native Module

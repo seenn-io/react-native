@@ -310,7 +310,7 @@ export function useLiveActivity(
   const end = useCallback(async (): Promise<boolean> => {
     if (!job || !isActive) return false;
 
-    const success = await LiveActivity.end({
+    const result = await LiveActivity.end({
       jobId: job.jobId,
       finalStatus: job.status as 'completed' | 'failed' | 'cancelled',
       finalProgress: job.progress,
@@ -320,17 +320,17 @@ export function useLiveActivity(
       dismissAfter,
     });
 
-    if (success) {
+    if (result.success) {
       setIsActive(false);
     }
-    return success;
+    return result.success;
   }, [job, isActive, dismissAfter]);
 
   // Manual sync (force update)
   const sync = useCallback(async (): Promise<boolean> => {
     if (!job || !isActive) return false;
 
-    return LiveActivity.update({
+    const result = await LiveActivity.update({
       jobId: job.jobId,
       progress: job.progress,
       status: job.status as 'pending' | 'running' | 'completed' | 'failed',
@@ -339,6 +339,7 @@ export function useLiveActivity(
       stageIndex: job.stage?.current,
       stageTotal: job.stage?.total,
     });
+    return result.success;
   }, [job, isActive]);
 
   return {

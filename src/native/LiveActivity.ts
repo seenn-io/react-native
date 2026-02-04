@@ -2,6 +2,8 @@
 // MIT License - Open Source
 
 import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
+import { SeennErrorCode } from '../errors/codes';
+import { validateJobId, validateTitle, validateProgress, validateStatus } from '../utils/validation';
 
 const { SeennLiveActivity: NativeModule } = NativeModules;
 
@@ -86,6 +88,8 @@ export interface LiveActivityResult {
   jobId?: string;
   /** Error message if failed */
   error?: string;
+  /** Error code for programmatic handling */
+  code?: SeennErrorCode;
 }
 
 /** Push token event type */
@@ -132,6 +136,18 @@ function getEventEmitter(): NativeEventEmitter | null {
   return eventEmitter;
 }
 
+// MARK: - Helper Functions
+
+function createErrorResult(error: string, code: SeennErrorCode): LiveActivityResult {
+  return { success: false, error, code };
+}
+
+function logWarning(message: string): void {
+  if (__DEV__) {
+    console.warn(`[Seenn] ${message}`);
+  }
+}
+
 // MARK: - LiveActivity API
 
 /**
@@ -139,17 +155,26 @@ function getEventEmitter(): NativeEventEmitter | null {
  *
  * @example
  * ```typescript
- * import { LiveActivity } from '@seenn/react-native';
+ * import { LiveActivity, SeennErrorCode } from '@seenn/react-native';
  *
  * // Check support
  * const supported = await LiveActivity.isSupported();
  *
- * // Start activity
+ * // Start activity with validation
  * const result = await LiveActivity.start({
  *   jobId: 'job_123',
  *   title: 'Processing video...',
  *   initialProgress: 0,
  * });
+ *
+ * if (!result.success) {
+ *   // Handle specific error codes
+ *   if (result.code === SeennErrorCode.PLATFORM_NOT_SUPPORTED) {
+ *     console.log('Not on iOS');
+ *   } else if (result.code === SeennErrorCode.INVALID_JOB_ID) {
+ *     console.log('Invalid job ID');
+ *   }
+ * }
  *
  * // Update progress
  * await LiveActivity.update({
@@ -170,7 +195,7 @@ function getEventEmitter(): NativeEventEmitter | null {
 export const LiveActivity = {
   /**
    * Check if Live Activities are supported on this device
-   * Returns false on Android and iOS < 16.1
+   * Returns false on Android and iOS < 16.2
    */
   async isSupported(): Promise<boolean> {
     if (Platform.OS !== 'ios') return false;
@@ -200,7 +225,7 @@ export const LiveActivity = {
    * Start a new Live Activity for a job
    *
    * @param params - Activity parameters
-   * @returns Result with success status and activity ID
+   * @returns Result with success status, activity ID, and error code if failed
    *
    * @example
    * ```typescript
@@ -215,24 +240,62 @@ export const LiveActivity = {
    * if (result.success) {
    *   console.log('Activity started:', result.activityId);
    * } else {
-   *   console.error('Failed:', result.error);
+   *   console.error(`Failed [${result.code}]: ${result.error}`);
    * }
    * ```
    */
   async start(params: LiveActivityStartParams): Promise<LiveActivityResult> {
+    // Platform check
     if (Platform.OS !== 'ios') {
-      return { success: false, error: 'Live Activities are only supported on iOS' };
+      logWarning('LiveActivity.start() is only supported on iOS. Call ignored.');
+      return createErrorResult(
+        'Live Activities are only supported on iOS',
+        SeennErrorCode.PLATFORM_NOT_SUPPORTED
+      );
     }
+
+    // Native module check
     if (!NativeModule) {
-      return { success: false, error: 'Native module not available' };
+      return createErrorResult(
+        'Native module not available. Ensure native setup is complete.',
+        SeennErrorCode.NATIVE_MODULE_NOT_FOUND
+      );
     }
+
+    // Validate jobId
+    const jobIdError = validateJobId(params.jobId);
+    if (jobIdError) {
+      return createErrorResult(jobIdError.message, jobIdError.code);
+    }
+
+    // Validate title
+    const titleError = validateTitle(params.title);
+    if (titleError) {
+      return createErrorResult(titleError.message, titleError.code);
+    }
+
+    // Validate initialProgress
+    const progressError = validateProgress(params.initialProgress);
+    if (progressError) {
+      return createErrorResult(progressError.message, progressError.code);
+    }
+
     try {
-      return await NativeModule.startActivity(params);
-    } catch (error) {
+      const result = await NativeModule.startActivity(params);
+      if (result.success) {
+        return result;
+      }
+      // Native returned an error
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: result.error || 'Unknown native error',
+        code: result.code || SeennErrorCode.UNKNOWN_ERROR,
       };
+    } catch (error) {
+      return createErrorResult(
+        error instanceof Error ? error.message : 'Unknown error',
+        SeennErrorCode.UNKNOWN_ERROR
+      );
     }
   },
 
@@ -240,11 +303,11 @@ export const LiveActivity = {
    * Update an existing Live Activity
    *
    * @param params - Update parameters
-   * @returns true if updated successfully
+   * @returns Result with success status and error code if failed
    *
    * @example
    * ```typescript
-   * await LiveActivity.update({
+   * const result = await LiveActivity.update({
    *   jobId: 'job_123',
    *   progress: 75,
    *   status: 'running',
@@ -253,15 +316,64 @@ export const LiveActivity = {
    *   stageIndex: 2,
    *   stageTotal: 3,
    * });
+   *
+   * if (!result.success) {
+   *   console.error(`Update failed [${result.code}]: ${result.error}`);
+   * }
    * ```
    */
-  async update(params: LiveActivityUpdateParams): Promise<boolean> {
-    if (Platform.OS !== 'ios') return false;
-    if (!NativeModule) return false;
+  async update(params: LiveActivityUpdateParams): Promise<LiveActivityResult> {
+    // Platform check
+    if (Platform.OS !== 'ios') {
+      logWarning('LiveActivity.update() is only supported on iOS. Call ignored.');
+      return createErrorResult(
+        'Live Activities are only supported on iOS',
+        SeennErrorCode.PLATFORM_NOT_SUPPORTED
+      );
+    }
+
+    // Native module check
+    if (!NativeModule) {
+      return createErrorResult(
+        'Native module not available',
+        SeennErrorCode.NATIVE_MODULE_NOT_FOUND
+      );
+    }
+
+    // Validate jobId
+    const jobIdError = validateJobId(params.jobId);
+    if (jobIdError) {
+      return createErrorResult(jobIdError.message, jobIdError.code);
+    }
+
+    // Validate progress
+    const progressError = validateProgress(params.progress);
+    if (progressError) {
+      return createErrorResult(progressError.message, progressError.code);
+    }
+
+    // Validate status
+    const statusError = validateStatus(params.status, [
+      'pending',
+      'running',
+      'completed',
+      'failed',
+    ]);
+    if (statusError) {
+      return createErrorResult(statusError.message, statusError.code);
+    }
+
     try {
-      return await NativeModule.updateActivity(params);
-    } catch {
-      return false;
+      const success = await NativeModule.updateActivity(params);
+      if (success) {
+        return { success: true, jobId: params.jobId };
+      }
+      return createErrorResult('Activity not found or update failed', SeennErrorCode.ACTIVITY_NOT_FOUND);
+    } catch (error) {
+      return createErrorResult(
+        error instanceof Error ? error.message : 'Unknown error',
+        SeennErrorCode.UNKNOWN_ERROR
+      );
     }
   },
 
@@ -269,12 +381,12 @@ export const LiveActivity = {
    * End a Live Activity
    *
    * @param params - End parameters
-   * @returns true if ended successfully
+   * @returns Result with success status and error code if failed
    *
    * @example
    * ```typescript
    * // Completed job
-   * await LiveActivity.end({
+   * const result = await LiveActivity.end({
    *   jobId: 'job_123',
    *   finalStatus: 'completed',
    *   message: 'Video ready!',
@@ -291,13 +403,53 @@ export const LiveActivity = {
    * });
    * ```
    */
-  async end(params: LiveActivityEndParams): Promise<boolean> {
-    if (Platform.OS !== 'ios') return false;
-    if (!NativeModule) return false;
+  async end(params: LiveActivityEndParams): Promise<LiveActivityResult> {
+    // Platform check
+    if (Platform.OS !== 'ios') {
+      logWarning('LiveActivity.end() is only supported on iOS. Call ignored.');
+      return createErrorResult(
+        'Live Activities are only supported on iOS',
+        SeennErrorCode.PLATFORM_NOT_SUPPORTED
+      );
+    }
+
+    // Native module check
+    if (!NativeModule) {
+      return createErrorResult(
+        'Native module not available',
+        SeennErrorCode.NATIVE_MODULE_NOT_FOUND
+      );
+    }
+
+    // Validate jobId
+    const jobIdError = validateJobId(params.jobId);
+    if (jobIdError) {
+      return createErrorResult(jobIdError.message, jobIdError.code);
+    }
+
+    // Validate finalStatus
+    const statusError = validateStatus(params.finalStatus, ['completed', 'failed', 'cancelled']);
+    if (statusError) {
+      return createErrorResult(statusError.message, statusError.code);
+    }
+
+    // Validate finalProgress if provided
+    const progressError = validateProgress(params.finalProgress);
+    if (progressError) {
+      return createErrorResult(progressError.message, progressError.code);
+    }
+
     try {
-      return await NativeModule.endActivity(params);
-    } catch {
-      return false;
+      const success = await NativeModule.endActivity(params);
+      if (success) {
+        return { success: true, jobId: params.jobId };
+      }
+      return createErrorResult('Activity not found or end failed', SeennErrorCode.ACTIVITY_NOT_FOUND);
+    } catch (error) {
+      return createErrorResult(
+        error instanceof Error ? error.message : 'Unknown error',
+        SeennErrorCode.UNKNOWN_ERROR
+      );
     }
   },
 
@@ -331,6 +483,13 @@ export const LiveActivity = {
   async isActive(jobId: string): Promise<boolean> {
     if (Platform.OS !== 'ios') return false;
     if (!NativeModule) return false;
+
+    const jobIdError = validateJobId(jobId);
+    if (jobIdError) {
+      logWarning(`isActive: ${jobIdError.message}`);
+      return false;
+    }
+
     try {
       return await NativeModule.isActivityActive(jobId);
     } catch {
@@ -342,30 +501,72 @@ export const LiveActivity = {
    * Cancel a specific Live Activity immediately
    *
    * @param jobId - Job ID to cancel
-   * @returns true if cancelled successfully
+   * @returns Result with success status
    */
-  async cancel(jobId: string): Promise<boolean> {
-    if (Platform.OS !== 'ios') return false;
-    if (!NativeModule) return false;
+  async cancel(jobId: string): Promise<LiveActivityResult> {
+    if (Platform.OS !== 'ios') {
+      logWarning('LiveActivity.cancel() is only supported on iOS. Call ignored.');
+      return createErrorResult(
+        'Live Activities are only supported on iOS',
+        SeennErrorCode.PLATFORM_NOT_SUPPORTED
+      );
+    }
+
+    if (!NativeModule) {
+      return createErrorResult(
+        'Native module not available',
+        SeennErrorCode.NATIVE_MODULE_NOT_FOUND
+      );
+    }
+
+    const jobIdError = validateJobId(jobId);
+    if (jobIdError) {
+      return createErrorResult(jobIdError.message, jobIdError.code);
+    }
+
     try {
-      return await NativeModule.cancelActivity(jobId);
-    } catch {
-      return false;
+      const success = await NativeModule.cancelActivity(jobId);
+      if (success) {
+        return { success: true, jobId };
+      }
+      return createErrorResult('Activity not found', SeennErrorCode.ACTIVITY_NOT_FOUND);
+    } catch (error) {
+      return createErrorResult(
+        error instanceof Error ? error.message : 'Unknown error',
+        SeennErrorCode.UNKNOWN_ERROR
+      );
     }
   },
 
   /**
    * Cancel all Live Activities immediately
    *
-   * @returns true if cancelled successfully
+   * @returns Result with success status
    */
-  async cancelAll(): Promise<boolean> {
-    if (Platform.OS !== 'ios') return false;
-    if (!NativeModule) return false;
+  async cancelAll(): Promise<LiveActivityResult> {
+    if (Platform.OS !== 'ios') {
+      logWarning('LiveActivity.cancelAll() is only supported on iOS. Call ignored.');
+      return createErrorResult(
+        'Live Activities are only supported on iOS',
+        SeennErrorCode.PLATFORM_NOT_SUPPORTED
+      );
+    }
+
+    if (!NativeModule) {
+      return createErrorResult(
+        'Native module not available',
+        SeennErrorCode.NATIVE_MODULE_NOT_FOUND
+      );
+    }
+
     try {
-      return await NativeModule.cancelAllActivities();
-    } catch {
-      return false;
+      const success = await NativeModule.cancelAllActivities();
+      return { success };
+    } catch (error) {
+      return createErrorResult(
+        error instanceof Error ? error.message : 'Unknown error',
+        SeennErrorCode.UNKNOWN_ERROR
+      );
     }
   },
 
@@ -487,7 +688,12 @@ export const LiveActivity = {
    * ```
    */
   async requestProvisionalPushAuthorization(): Promise<boolean> {
-    if (Platform.OS !== 'ios') return false;
+    if (Platform.OS !== 'ios') {
+      logWarning(
+        'requestProvisionalPushAuthorization() is only supported on iOS. Call ignored.'
+      );
+      return false;
+    }
     if (!NativeModule) return false;
     try {
       return await NativeModule.requestProvisionalPushAuthorization();
@@ -513,7 +719,12 @@ export const LiveActivity = {
    * ```
    */
   async requestStandardPushAuthorization(): Promise<boolean> {
-    if (Platform.OS !== 'ios') return false;
+    if (Platform.OS !== 'ios') {
+      logWarning(
+        'requestStandardPushAuthorization() is only supported on iOS. Call ignored.'
+      );
+      return false;
+    }
     if (!NativeModule) return false;
     try {
       return await NativeModule.requestStandardPushAuthorization();
@@ -542,7 +753,10 @@ export const LiveActivity = {
    * ```
    */
   async upgradeToStandardPush(): Promise<boolean> {
-    if (Platform.OS !== 'ios') return false;
+    if (Platform.OS !== 'ios') {
+      logWarning('upgradeToStandardPush() is only supported on iOS. Call ignored.');
+      return false;
+    }
     if (!NativeModule) return false;
     try {
       return await NativeModule.requestStandardPushAuthorization();

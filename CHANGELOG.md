@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.10] - 2026-02-04
+
+### Added
+- **SDK Version Info** - Programmatic access to SDK version
+  - `SDK_VERSION` - Current SDK version string
+  - `SDK_NAME` - Package name (`@seenn/react-native`)
+  - `SDK_USER_AGENT` - For API request headers
+
+- **Error Codes** - Standardized error codes for all operations
+  - `SeennErrorCode` - Enum with all error codes
+  - All `LiveActivityResult` now includes `code` field for programmatic error handling
+  - Codes: `PLATFORM_NOT_SUPPORTED`, `INVALID_JOB_ID`, `INVALID_PROGRESS`, `ACTIVITY_NOT_FOUND`, etc.
+
+- **Input Validation** - Client-side validation before native calls
+  - Validates jobId, title, progress, status
+  - Returns specific error codes for invalid inputs
+  - `validateJobId()`, `validateTitle()`, `validateProgress()`, `validateStatus()` utilities exported
+
+- **Debug Mode** - Enhanced debugging for `useSeennPush` hook
+  - `debug: true` option enables detailed console logs
+  - Logs all operations: token refresh, authorization checks, errors
+
+### Changed
+- `LiveActivity.update()` now returns `LiveActivityResult` instead of `boolean` for consistency
+- `LiveActivity.end()` now returns `LiveActivityResult` instead of `boolean` for consistency
+- `LiveActivity.cancel()` now returns `LiveActivityResult` instead of `boolean` for consistency
+- `LiveActivity.cancelAll()` now returns `LiveActivityResult` instead of `boolean` for consistency
+- Android calls now log warning in dev mode instead of silent no-op
+
+### Example
+```typescript
+import { LiveActivity, SeennErrorCode, SDK_VERSION } from '@seenn/react-native';
+
+console.log('SDK Version:', SDK_VERSION); // '0.9.10'
+
+const result = await LiveActivity.start({ jobId: '', title: 'Test' });
+if (!result.success) {
+  if (result.code === SeennErrorCode.INVALID_JOB_ID) {
+    console.log('Invalid job ID!');
+  }
+}
+```
+
 ## [0.9.9] - 2026-02-04
 
 ### Added

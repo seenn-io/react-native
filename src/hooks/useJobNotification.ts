@@ -110,7 +110,7 @@ export function useJobNotification(
   const update = useCallback(async (): Promise<boolean> => {
     if (!job || !isActive) return false;
 
-    return JobNotification.update({
+    const result = await JobNotification.update({
       jobId: job.jobId,
       progress: job.progress,
       status: job.status as 'pending' | 'running' | 'completed' | 'failed',
@@ -122,6 +122,7 @@ export function useJobNotification(
         ? Math.floor(new Date(job.estimatedCompletionAt).getTime() / 1000)
         : undefined,
     });
+    return result.success;
   }, [job, isActive]);
 
   // End notification
@@ -141,12 +142,12 @@ export function useJobNotification(
         dismissAfter: getDismissAfter(),
       });
 
-      if (result) {
+      if (result.success) {
         isStartedRef.current = false;
         setIsActive(false);
       }
 
-      return result;
+      return result.success;
     },
     [job, getDismissAfter]
   );
@@ -157,12 +158,12 @@ export function useJobNotification(
 
     const result = await JobNotification.cancel(job.jobId);
 
-    if (result) {
+    if (result.success) {
       isStartedRef.current = false;
       setIsActive(false);
     }
 
-    return result;
+    return result.success;
   }, [job]);
 
   // Auto-sync effect
